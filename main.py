@@ -1,7 +1,9 @@
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
+from flask_mail import Mail, Message
+from random import *
 from authentications.register import register
 from manageUsers.getAllUsers import getUsers
 from manageUsers.getUserByIds import getUserId
@@ -9,11 +11,23 @@ from manageUsers.getUserByEmails import getUserEmail
 import os
 
 app = Flask(__name__)
+# mail = Mail(app)
 
 load_dotenv()
 secretKey = os.getenv("API_SECRET")
 
-# Configure your application
+# Mail Configration
+app.config['MAIL_SERVER'] = "smtp.gmail.com"
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = "ajnetworks54779@gmail.com"
+app.config['MAIL_PASSWORD'] = "pvwn wvdw lvmk txbn"
+# app.config['MAIL_PASSWORD'] = "*******"
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+otp = randint(000000, 999999)
+
+# Database Configuration
 app.config['MYSQL_HOST'] = "localhost"
 app.config['MYSQL_USER'] = "root"
 app.config['MYSQL_PASSWORD'] = ""
@@ -40,6 +54,28 @@ app.register_blueprint(getUserId)
 app.register_blueprint(getUserEmail)
 
 # print(secretKey)
+
+@app.route('/verify', methods=['POST'])
+def verify():
+    try:
+        email = request.form['email']
+        msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
+        msg.body=str(otp)
+        mail.send(msg)
+        return jsonify({"message": "OTP sent successfully"})
+    except Exception as e:
+        return jsonify({"message": f"Error {str(e)}"})
+    
+
+@app.route('/validate', methods=['POST'])
+def validate():
+    try:
+        user_otp = request.form['otp']
+        if otp == int(user_otp):
+            me =otp
+        return jsonify({"message": "OTP sent successfully"})
+    except Exception as e:
+        return jsonify({"message": f"Error {str(e)}"})
 
 @app.errorhandler(405)
 def method_not_allowed(error):
