@@ -1,5 +1,7 @@
-from flask import Blueprint, request, jsonify,current_app
+from flask import Blueprint, request, jsonify,current_app, session
 from datetime import datetime
+from random import *
+from flask_mail import Message
 
 # Create a Blueprint named 'register' for handling user registration routes
 register = Blueprint('register', __name__)
@@ -10,6 +12,7 @@ def registerNow():
     # Retrieve the bcrypt library and MySQL database connection from the Flask application's extensions
     mysql = current_app.extensions['mysql']
     bcrypt = current_app.extensions['bcrypt']
+    mail = current_app.extensions['mail']
 
     try:
         _firstname = request.form['firstname'].capitalize()
@@ -53,14 +56,23 @@ def registerNow():
         if today.month < dob.month or (today.month == dob.month and today.day < dob.day):
             age -= 1 # Subtract one year if the birthday hasn't occurred yet
 
+        otp = randint(100000, 999999)
 
+        msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [_email])
+        msg.body=str(otp)
+        mail.send(msg)
+
+        session['otp'] = otp
 
         # Insert new user
         cursor.execute("INSERT INTO users (id, firstname, lastname, email, dob, age, username, password, verified, date_created) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     (None, _firstname, _lastname, _email, dob, age, _username, hashed_password, 'No', today))
         mysql.connection.commit()
 
-        return jsonify({"message": f"User with email: {_email}, has been registered successfully"}), 201
+        return jsonify({
+            "message": f"User with email: {_email}, has been registered successfully",
+            "otp": otp,
+            }), 201
     
     except Exception as e:
         print(f"An error occurred: {e}")
