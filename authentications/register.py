@@ -63,6 +63,7 @@ def registerNow():
         mail.send(msg)
 
         session['otp'] = otp
+        session['email'] = _email
 
         # Insert new user
         cursor.execute("INSERT INTO users (id, firstname, lastname, email, dob, age, username, password, verified, date_created) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",

@@ -38,34 +38,34 @@ def verify():
         return jsonify({"message": f"Error {str(e)}"}), 400
     
 
-@verify_user.route('/validate', methods=['POST'])
-def validate():
+# @verify_user.route('/validate', methods=['POST'])
+# def validate():
 
-    try:
-        user_otp = request.form['otp']
+#     try:
+#         user_otp = request.form['otp']
 
-        stored_otp = session.get('otp')
-        stored_email = session.get('email')
-        # otp_expiry = session.get('otp_expiry')
-        # current_time = datetime.now().replace(tzinfo=None)
+#         stored_otp = session.get('otp')
+#         stored_email = session.get('email')
+#         # otp_expiry = session.get('otp_expiry')
+#         # current_time = datetime.now().replace(tzinfo=None)
 
-        if stored_email:
-            if stored_otp == int(user_otp):
-                # if current_time < otp_expiry:
-                    mysql = current_app.extensions['mysql']
-                    cursor = mysql.connection.cursor()
+#         if stored_email:
+#             if stored_otp == int(user_otp):
+#                 # if current_time < otp_expiry:
+#                     mysql = current_app.extensions['mysql']
+#                     cursor = mysql.connection.cursor()
 
-                    # Update user details
-                    cursor.execute("UPDATE users SET verified = %s WHERE email = %s",
-                                ('Yes', stored_email))
-                    mysql.connection.commit()
+#                     # Update user details
+#                     cursor.execute("UPDATE users SET verified = %s WHERE email = %s",
+#                                 ('Yes', stored_email))
+#                     mysql.connection.commit()
 
-                    return jsonify({"message": "Verification successful"})
-                # else:
-                #     return jsonify({"message": "OTP has expired!"})
-            return jsonify({"message": "Invalid OTP. Please try again."})
-        else:
-            return jsonify({"message": "Verification failed"})
+#                     return jsonify({"message": "Verification successful"})
+#                 # else:
+#                 #     return jsonify({"message": "OTP has expired!"})
+#             return jsonify({"message": "Invalid OTP. Please try again."})
+#         else:
+#             return jsonify({"message": "Verification failed"})
     
-    except Exception as e:
-        return jsonify({"message": f"Error {str(e)}"})
+#     except Exception as e:
+#         return jsonify({"message": f"Error {str(e)}"})

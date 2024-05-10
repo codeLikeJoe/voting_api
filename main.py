@@ -9,6 +9,9 @@ from manageUsers.getAllUsers import getUsers
 from manageUsers.getUserByIds import getUserId
 from manageUsers.getUserByEmails import getUserEmail
 from authentications.verifyAccount import verify_user
+from authentications.login import signInUser
+from authentications.validate_otp import validate_otp
+from home import home
 # import os
 from datetime import datetime, timedelta
 
@@ -55,11 +58,14 @@ app.register_blueprint(getUsers)
 app.register_blueprint(getUserId)
 app.register_blueprint(getUserEmail)
 app.register_blueprint(verify_user)
+app.register_blueprint(signInUser)
+app.register_blueprint(home)
+app.register_blueprint(validate_otp)
 
-current_time = datetime.now()
-expire = current_time + timedelta(minutes=5)
-print(current_time)
-print(expire)
+# current_time = datetime.now()
+# expire = current_time + timedelta(minutes=5)
+# print(current_time)
+# print(expire)
 
 @app.errorhandler(405)
 def method_not_allowed(error):
