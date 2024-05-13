@@ -4,13 +4,16 @@ from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 # from random import *
-from authentications.register import register
+from authentications.Registration.register import register
 from manageUsers.getAllUsers import getUsers
 from manageUsers.getUserByIds import getUserId
 from manageUsers.getUserByEmails import getUserEmail
 from authentications.verifyAccount import verify_user
 from authentications.login import signInUser
-from authentications.validate_otp import validate_otp
+from authentications.Registration.validate_otp import validate_otp
+from authentications.ForgotPassword.forgot_password import forgot_password
+from authentications.ForgotPassword.validate_forgot_password_otp import validate_reset_password_otp
+from authentications.ForgotPassword.reset_password import reset_password
 from home import home
 # import os
 from datetime import datetime, timedelta
@@ -61,6 +64,9 @@ app.register_blueprint(verify_user)
 app.register_blueprint(signInUser)
 app.register_blueprint(home)
 app.register_blueprint(validate_otp)
+app.register_blueprint(forgot_password)
+app.register_blueprint(validate_reset_password_otp)
+app.register_blueprint(reset_password)
 
 # current_time = datetime.now()
 # expire = current_time + timedelta(minutes=5)
