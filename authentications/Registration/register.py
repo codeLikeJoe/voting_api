@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify,current_app, session
-from datetime import datetime
+from datetime import datetime, timedelta
 from random import *
 from flask_mail import Message
 
@@ -62,6 +62,13 @@ def registerNow():
         msg.body=str(otp)
         mail.send(msg)
 
+        current_time = datetime.now()
+        expiry = current_time + timedelta(minutes=5)
+
+        # Convert expiry to milliseconds
+        expire_ms = expiry.timestamp() * 1000
+
+        session['otp_expiry'] = expire_ms
         session['otp'] = otp
         session['email'] = _email
 
