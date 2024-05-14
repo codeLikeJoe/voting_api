@@ -1,4 +1,5 @@
-from flask import Blueprint, request, jsonify,current_app, session
+from flask import Blueprint, request, jsonify, session
+from datetime import datetime, timedelta
 
 validate_reset_password_otp = Blueprint('_reset_password_otp', __name__)
 
@@ -9,15 +10,17 @@ def index():
 
         otp = session.get('forgot_password_otp')
         email = session.get('forgot_password_email')
+        otp_expiry = session.get('otp_expiry')
+        current_time = datetime.now().timestamp() * 1000
 
         if email:
             if otp == int(user_otp):
-                # if current_time < otp_expiry:
+                if current_time < otp_expiry:
                     session['reset password'] = True
                     session['email'] = email
                     return jsonify({"message": "verified successfully"}), 200
-                # else:
-                #     return jsonify({"message": "OTP has expired!"})
+                else:
+                    return jsonify({"message": "sorry, the OTP code has expired!"}), 400
             return jsonify({"message": "Invalid OTP. Please try again."}), 400
         else:
             return jsonify({"message": "Verification failed"}), 400

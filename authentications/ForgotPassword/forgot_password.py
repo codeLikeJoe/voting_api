@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify,current_app, session
 from random import *
 from flask_mail import Message
+from datetime import datetime, timedelta
 
 forgot_password = Blueprint('_forgot_password', __name__)
 
@@ -24,10 +25,13 @@ def forgotpassword():
             msg.body= f"""Hi {user[1]},\n\n You requested to reset your password.\nUse this code to verify your account in order to set a new password.\n\n\nCode\t {str(otp)}"""
             mail.send(msg)
 
-            # current_time = datetime.now().replace(tzinfo=None)
-            # expiry = current_time + timedelta(minutes=1)
+            current_time = datetime.now()
+            expiry = current_time + timedelta(minutes=5)
 
-            # session['otp_expiry'] = expiry
+            # Convert expiry to milliseconds
+            expire_ms = expiry.timestamp() * 1000
+
+            session['otp_expiry'] = expire_ms
             session['forgot_password_otp'] = otp
             session['forgot_password_email'] = email
 

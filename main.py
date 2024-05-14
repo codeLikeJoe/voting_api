@@ -1,5 +1,5 @@
 # from dotenv import load_dotenv
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 from flask import Flask
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
@@ -41,10 +41,17 @@ app.errorhandler(404)(not_found)
 # Blueprints
 register_blueprints(app)
 
-# current_time = datetime.now()
-# expire = current_time + timedelta(minutes=5)
-# print(current_time)
-# print(expire)
+# Assuming current_time and expire are already defined as datetime objects
+current_time = datetime.now()
+expire = current_time + timedelta(minutes=5)
+
+# Convert current_time to milliseconds
+current_time_ms = current_time.timestamp() * 1000
+print(f"Current Time in milliseconds: {current_time_ms}")
+
+# Convert expire to milliseconds
+expire_ms = expire.timestamp() * 1000
+print(f"Expire Time in milliseconds: {expire_ms}")
 
 if __name__ == '__main__':
     app.run(debug=True)

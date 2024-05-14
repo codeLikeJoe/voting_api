@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify,current_app, session
+from datetime import datetime, timedelta
 
 validate_otp = Blueprint('_validate_otp', __name__)
 
@@ -10,12 +11,12 @@ def validate():
 
         stored_otp = session.get('otp')
         stored_email = session.get('email')
-        # otp_expiry = session.get('otp_expiry')
-        # current_time = datetime.now().replace(tzinfo=None)
+        otp_expiry = session.get('otp_expiry')
+        current_time = datetime.now().timestamp() * 1000
 
         if stored_email:
             if stored_otp == int(user_otp):
-                # if current_time < otp_expiry:
+                if current_time < otp_expiry:
                     mysql = current_app.extensions['mysql']
                     cursor = mysql.connection.cursor()
 
@@ -26,8 +27,8 @@ def validate():
 
                     return jsonify({"status": "successful", 
                                     "message":f"{stored_email} has been verified"}), 200
-                # else:
-                #     return jsonify({"message": "OTP has expired!"})
+                else:
+                    return jsonify({"message": "sorry, the OTP code has expired!"}), 400
             return jsonify({"message": "Invalid OTP. Please try again."}), 400
         else:
             return jsonify({"message": "Verification failed"}), 400
