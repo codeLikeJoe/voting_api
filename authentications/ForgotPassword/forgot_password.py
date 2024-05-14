@@ -21,7 +21,7 @@ def forgotpassword():
 
         if user:
             msg = Message(subject="OTP To Reset Password", sender="ajnetworks54779@gmail.com", recipients= [email])
-            msg.body= f"""Hi {user[1]},\n\n You requested to reset your password.\nUse this code to verify your account in order to set a new password.\n\n\nCode:\t {str(otp)}"""
+            msg.body= f"""Hi {user[1]},\n\n You requested to reset your password.\nUse this code to verify your account in order to set a new password.\n\n\nCode\t {str(otp)}"""
             mail.send(msg)
 
             # current_time = datetime.now().replace(tzinfo=None)
