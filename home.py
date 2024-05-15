@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from authentications.token.token_requirement import TokenRequirement
+from Authentications.token.token_requirement import TokenRequirement
 
 home = Blueprint('_home', __name__)
 token_requirement = TokenRequirement(home)

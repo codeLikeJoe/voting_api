@@ -43,7 +43,7 @@ register_blueprints(app)
 
 # Assuming current_time and expire are already defined as datetime objects
 current_time = datetime.now()
-expire = current_time + timedelta(minutes=5)
+expire = current_time + timedelta(minutes=60)
 
 # Convert current_time to milliseconds
 current_time_ms = current_time.timestamp() * 1000
