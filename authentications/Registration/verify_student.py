@@ -20,9 +20,12 @@ def index():
         
         if not user:
             return jsonify({"message": "user not found"}), 404
+        
+        cursor.execute("SELECT * FROM srtauthwq WHERE email = %s", (email,))
+        student = cursor.fetchone()
 
-        hashed_otp_from_db = user[5]
-        otp_expiry = user[6]
+        hashed_otp_from_db = student[3]
+        otp_expiry = student[4]
 
         # Check if the OTP has expired
         current_time = datetime.now().timestamp() * 1000
@@ -32,6 +35,9 @@ def index():
 
         # Compare hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
+            cursor.execute("UPDATE srtauthwq SET verified = %s WHERE email = %s",
+                                    ("Yes", email))
+            mysql.connection.commit()
             return jsonify({"message": "OTP verified successfully"}), 200
         else:
             return jsonify({"message": "Invalid OTP"}), 401

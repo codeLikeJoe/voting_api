@@ -21,11 +21,10 @@ from programs.get_program import get_programs as get_programs_blueprint
 
 # Register the blueprints
 def register_blueprints(app):
-    app.register_blueprint(register_blueprint)
+    # app.register_blueprint(register_blueprint)
     app.register_blueprint(getUsers_blueprint)
     app.register_blueprint(getUserId_blueprint)
     app.register_blueprint(getUserEmail_blueprint)
-    app.register_blueprint(verify_user_blueprint)
     app.register_blueprint(signInUser_blueprint)
     app.register_blueprint(home_blueprint)
     app.register_blueprint(validate_otp_blueprint)
@@ -33,8 +32,11 @@ def register_blueprints(app):
     app.register_blueprint(validate_reset_password_otp_blueprint)
     app.register_blueprint(reset_password_blueprint)
     app.register_blueprint(apply_position_blueprint)
+
+    # student registration
     app.register_blueprint(register_student_blueprint)
     app.register_blueprint(verify_student_blueprint)
+    app.register_blueprint(verify_user_blueprint)
 
     # for programs
     app.register_blueprint(add_program_blueprint)

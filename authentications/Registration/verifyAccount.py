@@ -9,34 +9,37 @@ verify_user = Blueprint('verify_user_account', __name__)
 def verify():
     mail = current_app.extensions['mail']
     mysql = current_app.extensions['mysql']
+    bcrypt = current_app.extensions['bcrypt']
     cursor = mysql.connection.cursor()
 
     try:
         otp = randint(100000, 999999)
+        # Hash the OTP
+        hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
 
         email = request.form['email']
 
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM srtauthwq WHERE email = %s", (email,))
         user = cursor.fetchone()
 
-        if user:
-            msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
-            msg.body=str(otp)
-            mail.send(msg)
-
-            current_time = datetime.now()
-            expiry = current_time + timedelta(minutes=5)
-
-            # Convert expiry to milliseconds
-            expire_ms = expiry.timestamp() * 1000
-
-            session['otp_expiry'] = expire_ms
-            session['otp'] = otp
-            session['email'] = email
-
-            return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
-        else:
+        if not user:
             return jsonify({"message":"user not found"}), 404
+
+        msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
+        msg.body=str(otp)
+        mail.send(msg)
+
+        current_time = datetime.now()
+        expiry = current_time + timedelta(minutes=5)
+        # Convert expiry to milliseconds
+        expire_ms = expiry.timestamp() * 1000
+
+        cursor.execute("UPDATE srtauthwq SET otp = %s, expiry = %s WHERE email = %s",
+                                (hashed_otp, str(expire_ms), email))
+        mysql.connection.commit()
+
+        return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
+        
     except Exception as e:
         return jsonify({"message": f"Error {str(e)}"}), 400
     
