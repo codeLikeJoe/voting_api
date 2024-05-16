@@ -9,41 +9,44 @@ def login():
         mysql = current_app.extensions['mysql']
         bcrypt = current_app.extensions['bcrypt']
 
-        _username = request.form['username']
-        _password = request.form['password']
+        student_id = request.form['student id']
+        password = request.form['password']
 
-        if not _username or not _password:
+        if not student_id or not password:
             return jsonify({"message": "Please provide username and password."})
 
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE username=%s", (_username,))
-        user = cursor.fetchone()
+        cursor.execute("SELECT * FROM srtauthwq WHERE student_id=%s", (student_id,))
+        auth = cursor.fetchone()
 
-        if user:
-            if user[8] == 'Yes':
-                
-                if bcrypt.check_password_hash(user[7], _password):
+        if auth:
+            if auth[5] == 'Yes':
+                cursor.execute("SELECT * FROM students WHERE student_id=%s", (student_id,))
+                user = cursor.fetchone()
+
+                if user[6] == "":
+                    return jsonify({"message":"Please set a password"}), 400
+                               
+                if bcrypt.check_password_hash(user[6], password):
                     token = jwt.encode({
-                        'username': request.form['username'],
-                        'email': user[3],
                         'firstname': user[1],
                         'lastname': user[2],
-                        'date of birth': user[4].strftime('%Y-%m-%d'),
-                        'age': user[5],
+                        'student id': user[3],
+                        'email': user[4],
+                        'program': user[5],
                     }, current_app.config['SECRET_KEY'], algorithm="HS256")
 
                     user_info = {
                         'id': user[0],
                         'firstname': user[1],
                         'lastname': user[2],
-                        'email': user[3],
-                        'date of birth': user[4],
-                        'age': user[5],
-                        'username': user[6],
+                        'student id': user[3],
+                        'email': user[4],
+                        'program': user[5],
                     }
                     return jsonify({
                         'token': token,
-                        'message': 'successful', 
+                        'message': 'Welcome to SmartVote', 
                         "user info": user_info
                         }), 200
                 else:
@@ -51,7 +54,7 @@ def login():
             else:
                 return jsonify({"message": "Please verify your email address"}), 401
         else:
-            return jsonify({"message": "Invalid username or password"}), 400
+            return jsonify({"message": "Invalid id or password"}), 400
         
     except Exception as e:
         print('Error: ', e)
