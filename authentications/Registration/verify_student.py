@@ -38,6 +38,10 @@ def index():
             cursor.execute("UPDATE srtauthwq SET verified = %s WHERE email = %s",
                                     ("Yes", email))
             mysql.connection.commit()
+
+            session['reset password'] = True
+            session['email'] = email
+
             return jsonify({"message": "OTP verified successfully"}), 200
         else:
             return jsonify({"message": "Invalid OTP"}), 401

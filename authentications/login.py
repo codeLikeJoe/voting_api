@@ -13,7 +13,7 @@ def login():
         password = request.form['password']
 
         if not student_id or not password:
-            return jsonify({"message": "Please provide username and password."})
+            return jsonify({"message": "Please provide id and password."})
 
         cursor = mysql.connection.cursor()
         cursor.execute("SELECT * FROM srtauthwq WHERE student_id=%s", (student_id,))

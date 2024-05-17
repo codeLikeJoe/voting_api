@@ -6,11 +6,11 @@ getUsers = Blueprint('getUsers', __name__)
 def get_all_users():
     mysql = current_app.extensions['mysql']
     cursor = mysql.connection.cursor()
-    cursor.execute("SELECT * FROM users")
+    cursor.execute("SELECT * FROM students")
     users = cursor.fetchall()
 
     # Execute a query to count the total number of users
-    cursor.execute("SELECT COUNT(*) FROM users")
+    cursor.execute("SELECT COUNT(*) FROM students")
     total_users = cursor.fetchone()[0] # Fetch the count from the first (and only) row
 
     user_list = []
@@ -20,11 +20,10 @@ def get_all_users():
             'id': user[0],
             'firstname': user[1],
             'lastname': user[2],
-            'email': user[3],
-            'dob': user[4],
-            'age': user[5],
-            'username': user[6],
-            'verified?': user[8]
+            'student_id': user[3],
+            'email': user[4],
+            'program': user[5],
+            'date_created': user[7],
         }
         user_list.append(user_data)
 

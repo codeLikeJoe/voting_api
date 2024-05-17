@@ -17,7 +17,7 @@ def index():
         firstname = request.form['firstname'].capitalize()
         lastname = request.form['lastname'].capitalize()
         email = request.form['email'].lower()
-        student_id = request.form['student_id'].lower()
+        student_id = request.form['student_id'].upper()
         program_code = request.form['program code'].lower()
 
         cursor = mysql.connection.cursor()

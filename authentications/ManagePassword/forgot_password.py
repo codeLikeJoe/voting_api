@@ -10,17 +10,20 @@ def forgotpassword():
 
     mail = current_app.extensions['mail']
     mysql = current_app.extensions['mysql']
+    bcrypt = current_app.extensions['bcrypt']
     cursor = mysql.connection.cursor()
 
     try:
-        otp = randint(100000, 999999)
-
         email = request.form['email']
 
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
         user = cursor.fetchone()
 
         if user:
+            otp = randint(100000, 999999)
+            # Hash the OTP
+            hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
+
             msg = Message(subject="OTP To Reset Password", sender="ajnetworks54779@gmail.com", recipients= [email])
             msg.body= f"""Hi {user[1]},\n\n You requested to reset your password.\nUse this code to verify your account in order to set a new password.\n\n\nCode\t {str(otp)}"""
             mail.send(msg)
@@ -31,9 +34,13 @@ def forgotpassword():
             # Convert expiry to milliseconds
             expire_ms = expiry.timestamp() * 1000
 
-            session['otp_expiry'] = expire_ms
-            session['forgot_password_otp'] = otp
+            # session['otp_expiry'] = expire_ms
+            # session['forgot_password_otp'] = otp
             session['forgot_password_email'] = email
+
+            cursor.execute("UPDATE srtauthwq SET otp = %s, expiry = %s WHERE email = %s",
+                                (hashed_otp, str(expire_ms), email))
+            mysql.connection.commit()
 
             return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
         else:

@@ -15,16 +15,18 @@ def index():
             if confirm_password == new_password:
                 mysql = current_app.extensions['mysql']
                 bcrypt = current_app.extensions['bcrypt']
+
                 cursor = mysql.connection.cursor()
 
                 if len(new_password) < 6:
                     return jsonify({"message": "Password must be at least 6 characters long."}), 400
-                else:
-                    hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+                
+                hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-                cursor.execute("UPDATE users SET password = %s WHERE email = %s",
+                cursor.execute("UPDATE students SET password = %s WHERE email = %s",
                                     (hashed_password, email))
                 mysql.connection.commit()
+
                 return jsonify({"message": f"User ({email}) password updated successfully."}), 200
             else:
                 return jsonify({"message": "password mismatch!"}), 400
