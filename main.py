@@ -6,7 +6,7 @@ from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from config import mail_config, database_config
 from register_blueprints import register_blueprints
-from error_handlers import method_not_allowed, not_found
+from lib.error_handlers import method_not_allowed, not_found
 # import os
 
 

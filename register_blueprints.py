@@ -1,24 +1,24 @@
-from manageUsers.getAllUsers import getUsers as getUsers_blueprint
-from manageUsers.getUserByIds import getUserId as getUserId_blueprint
-from manageUsers.getUserByEmails import getUserEmail as getUserEmail_blueprint
+from lib.manageUsers.getAllUsers import getUsers as getUsers_blueprint
+from lib.manageUsers.getUserByIds import getUserId as getUserId_blueprint
+from lib.manageUsers.getUserByEmails import getUserEmail as getUserEmail_blueprint
 
-from home import home as home_blueprint
+from lib.home import home as home_blueprint
 
-from Authentications.Registration.register_student import register_student as register_student_blueprint
-from Authentications.Registration.verify_student import verify_student as verify_student_blueprint
-from Authentications.Registration.verifyAccount import verify_user as verify_user_blueprint
+from lib.Authentications.Registration.register_student import register_student as register_student_blueprint
+from lib.Authentications.Registration.verify_student import verify_student as verify_student_blueprint
+from lib.Authentications.Registration.verifyAccount import verify_user as verify_user_blueprint
 
-from Authentications.login import signInUser as signInUser_blueprint
+from lib.Authentications.login import signInUser as signInUser_blueprint
 
-from Authentications.ManagePassword.forgot_password import forgot_password as forgot_password_blueprint
-from Authentications.ManagePassword.validate_forgot_password_otp import validate_reset_password_otp as validate_reset_password_otp_blueprint
-from Authentications.ManagePassword.reset_password import reset_password as reset_password_blueprint
+from lib.Authentications.ManagePassword.forgot_password import forgot_password as forgot_password_blueprint
+from lib.Authentications.ManagePassword.validate_forgot_password_otp import validate_reset_password_otp as validate_reset_password_otp_blueprint
+from lib.Authentications.ManagePassword.reset_password import reset_password as reset_password_blueprint
 
-from Candidate.apply_for_position import apply_position as apply_position_blueprint
+from lib.Candidate.apply_for_position import apply_position as apply_position_blueprint
 
-from programs.add_programs import add_program as add_program_blueprint
-from programs.manage_programs import program as program_blueprint
-from programs.get_program import get_programs as get_programs_blueprint
+from lib.programs.add_programs import add_program as add_program_blueprint
+from lib.programs.manage_programs import program as program_blueprint
+from lib.programs.get_program import get_programs as get_programs_blueprint
 
 # Register the blueprints
 def register_blueprints(app):
