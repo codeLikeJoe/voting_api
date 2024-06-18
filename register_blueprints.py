@@ -26,6 +26,11 @@ from lib.programs.get_program import get_programs as get_programs_blueprint
 # admin
 from lib.admin.add_admin import add_admin as add_admin_blueprint
 
+# elections
+from lib.Elections.create_elections import create_elections as create_elections_blueprint
+from lib.Elections.edit_elections import edit_elections as edit_elections_blueprint
+from lib.Elections.elections import elections as elections_blueprint
+
 # Register the blueprints
 def register_blueprints(app):
     # login
@@ -55,4 +60,9 @@ def register_blueprints(app):
 
     # admin
     app.register_blueprint(add_admin_blueprint)
+
+    # elections
+    app.register_blueprint(create_elections_blueprint)
+    app.register_blueprint(edit_elections_blueprint)
+    app.register_blueprint(elections_blueprint)
     
