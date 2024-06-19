@@ -31,6 +31,11 @@ from lib.Elections.create_elections import create_elections as create_elections_
 from lib.Elections.edit_elections import edit_elections as edit_elections_blueprint
 from lib.Elections.elections import elections as elections_blueprint
 
+# positions
+from lib.Positions.positions import positions as positions_blueprint 
+from lib.Positions.create_positions import create_positions as create_positions_blueprint 
+from lib.Positions.edit_position import edit_positions as edit_positions_blueprint 
+
 # Register the blueprints
 def register_blueprints(app):
     # login
@@ -65,4 +70,9 @@ def register_blueprints(app):
     app.register_blueprint(create_elections_blueprint)
     app.register_blueprint(edit_elections_blueprint)
     app.register_blueprint(elections_blueprint)
+
+    # positions
+    app.register_blueprint(positions_blueprint)
+    app.register_blueprint(create_positions_blueprint)
+    app.register_blueprint(edit_positions_blueprint)
     

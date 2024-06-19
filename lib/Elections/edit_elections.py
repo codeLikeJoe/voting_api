@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
+import re
 
-DATE_FORMAT = '%Y-%m-%d'
+# DATE_FORMAT = '%Y-%m-%d'
 
 edit_elections = Blueprint('_edit_elections', __name__)
 
@@ -12,16 +13,22 @@ def edit_index(election_id):
     if request.method == 'PUT':
 
         try:
-            title = request.form.get('title').lower()
-            start_date_str = request.form.get('start date')
-            end_date_str = request.form.get('end date')
+            title = request.form['title'].lower()
+            start_datetime_str = request.form['start_datetime']
+            end_datetime_str = request.form['end_datetime']
 
-            # Validate date format
-            try:
-                start_date = datetime.strptime(start_date_str, DATE_FORMAT)
-                end_date = datetime.strptime(end_date_str, DATE_FORMAT)
-            except ValueError:
-                return jsonify({"error": "Invalid date format. Expected format: YYYY-MM-DD"}), 400
+            datetime_format = "%Y-%m-%d %H:%M"
+
+            # Regular expression pattern for validation
+            datetime_pattern = re.compile(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}')
+
+            # Checking if the datetime strings are in the correct format
+            if not datetime_pattern.match(start_datetime_str) or not datetime_pattern.match(end_datetime_str):
+                return jsonify({'message': 'Invalid datetime format. Expected format: YYYY-MM-DD HH:MM'}), 400
+
+            # Converting string datetimes to datetime objects
+            start_datetime = datetime.strptime(start_datetime_str, datetime_format)
+            end_datetime = datetime.strptime(end_datetime_str, datetime_format)
 
             cursor = mysql.connection.cursor()
             
@@ -39,10 +46,24 @@ def edit_index(election_id):
                     start_date = %s, 
                     end_date = %s
                 WHERE election_id = %s
-            """, (title, start_date, end_date, election_id))
+            """, (title, start_datetime, end_datetime, election_id))
 
             mysql.connection.commit()
-            return jsonify({"message": f"Election with ID {election_id} has been updated successfully"}), 200
+
+            # cursor.execute("SELECT * FROM elections WHERE election_id = %s", (election_id,))
+            # election = cursor.fetchone()
+
+            # Prepare the response
+            response_data = {
+                "election_id": election[0],
+                "election_title": election[1].upper(),
+                "serial_code": election[2],
+                "start_date": election[3].strftime("%a, %d %b %Y %H:%M"),
+                "end_date": election[4].strftime("%a, %d %b %Y %H:%M"),
+                "date_created": election[5],
+            }
+            return jsonify(response_data), 200
+            # return jsonify({"message": f"Election with ID {election_id} has been updated successfully"}), 200
 
         except Exception as e:
             return jsonify({"error": str(e)}), 400
@@ -55,7 +76,6 @@ def edit_index(election_id):
             cursor = mysql.connection.cursor()
             cursor.execute("SELECT * FROM elections WHERE election_id = %s", (election_id,))
             election = cursor.fetchone()
-            print(election)
 
             if not election:
                 return jsonify({"message": "Election not found"}), 404
@@ -65,9 +85,9 @@ def edit_index(election_id):
                 "election_id": election[0],
                 "election_title": election[1].upper(),
                 "serial_code": election[2],
-                "start_date": election[3],
-                "end_date": election[4],
-                "created_at": election[5],
+                "start_date": election[3].strftime("%a, %d %b %Y %H:%M"),
+                "end_date": election[4].strftime("%a, %d %b %Y %H:%M"),
+                "date_created": election[5],
             }
 
             return jsonify(response_data), 200
