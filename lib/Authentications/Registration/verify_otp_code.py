@@ -1,11 +1,11 @@
 from flask import Blueprint, request, jsonify,current_app, session
-from datetime import datetime, timedelta
+from datetime import datetime
 # from random import *
 # from flask_mail import Message
 
-verify_student = Blueprint('_verify_student', __name__)
+verify_otp = Blueprint('_verify_otp', __name__)
 
-@verify_student.route('/verify_student', methods=['POST'])
+@verify_otp.route('/verify_otp', methods=['POST'])
 def index():
     mysql = current_app.extensions['mysql']
     bcrypt = current_app.extensions['bcrypt']
@@ -15,32 +15,34 @@ def index():
         received_otp = request.form['otp']
 
         cursor = mysql.connection.cursor()
+
+
         cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
         user = cursor.fetchone()
         
         if not user:
             return jsonify({"message": "user not found"}), 404
         
-        cursor.execute("SELECT * FROM srtauthwq WHERE email = %s", (email,))
+        student_id = user[3]
+        
+        cursor.execute("SELECT * FROM srtauthwqs WHERE student_id = %s", (student_id,))
         student = cursor.fetchone()
 
-        hashed_otp_from_db = student[3]
-        otp_expiry = student[4]
+        hashed_otp_from_db = student[2]
+        otp_expiry = student[3]
 
-        # Check if the OTP has expired
         current_time = datetime.now().timestamp() * 1000
+
+        # Checking if the OTP has expired
         if current_time > float(otp_expiry):
             return jsonify({"message": "OTP has expired"}), 400
         
 
-        # Compare hashes
+        # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE srtauthwq SET verified = %s WHERE email = %s",
-                                    ("Yes", email))
+            cursor.execute("UPDATE srtauthwqs SET verified = %s, reset_password = %s WHERE student_id = %s",
+                                    ("Yes", "Yes", student_id))
             mysql.connection.commit()
-
-            session['reset password'] = True
-            session['email'] = email
 
             return jsonify({"message": "OTP verified successfully"}), 200
         else:

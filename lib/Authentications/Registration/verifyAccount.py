@@ -19,23 +19,25 @@ def verify():
 
         email = request.form['email']
 
-        cursor.execute("SELECT * FROM srtauthwq WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
         user = cursor.fetchone()
 
         if not user:
-            return jsonify({"message":"user not found"}), 404
+            return jsonify({"message":"Sorry, user not found"}), 404
 
-        msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
-        msg.body=str(otp)
-        mail.send(msg)
+        # msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
+        # msg.body=str(otp)
+        # mail.send(msg)
 
         current_time = datetime.now()
         expiry = current_time + timedelta(minutes=5)
         # Convert expiry to milliseconds
         expire_ms = expiry.timestamp() * 1000
 
-        cursor.execute("UPDATE srtauthwq SET otp = %s, expiry = %s WHERE email = %s",
-                                (hashed_otp, str(expire_ms), email))
+        student_id = user[3]
+
+        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE student_id = %s",
+                                (hashed_otp, str(expire_ms), student_id))
         mysql.connection.commit()
 
         return jsonify({"message": "OTP sent successfully", "otp":otp}), 200

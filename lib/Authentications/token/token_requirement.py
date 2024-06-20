@@ -12,14 +12,14 @@ class TokenRequirement:
             token = request.args.get('token')
 
             if not token:
-                return jsonify({'message':'Authentication required'}), 403
+                return jsonify({'message':'Authentication required'}), 401
             
             try:
                 data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
             except jwt.ExpiredSignatureError:
-                return jsonify({'message': 'Token has expired'}), 401
+                return jsonify({'message': 'Token has expired'}), 400
             except jwt.InvalidTokenError:
-                return jsonify({'message': 'Invalid token'}), 401
+                return jsonify({'message': 'Invalid token'}), 403
             
             return f(*args, **kwargs)
         return decorated
