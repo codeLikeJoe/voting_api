@@ -66,7 +66,7 @@ def edit_index(election_id):
             # return jsonify({"message": f"Election with ID {election_id} has been updated successfully"}), 200
 
         except Exception as e:
-            return jsonify({"error": str(e)}), 400
+            return jsonify({"error": str(e)}), 500
         
 
     if request.method == 'GET':

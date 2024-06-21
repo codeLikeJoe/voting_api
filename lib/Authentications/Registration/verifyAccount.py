@@ -7,41 +7,58 @@ verify_user = Blueprint('verify_user_account', __name__)
 
 @verify_user.route('/verify', methods=['POST'])
 def verify():
-    mail = current_app.extensions['mail']
+    # mail = current_app.extensions['mail']
     mysql = current_app.extensions['mysql']
     bcrypt = current_app.extensions['bcrypt']
-    cursor = mysql.connection.cursor()
+    
 
     try:
-        otp = randint(100000, 999999)
-        # Hash the OTP
-        hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
+        email = request.form.get('email')
+        student_id = request.form.get('student_id')
 
-        email = request.form['email']
+        if email or student_id:
+            pass
+        else:
+            return jsonify({'message': 'Email or student id is required!'}), 400   
+        
+        cursor = mysql.connection.cursor()
 
-        cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
+        if email:
+            cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        elif student_id:
+            cursor.execute("SELECT * FROM users WHERE student_id = %s", (student_id,))
+
         user = cursor.fetchone()
-
         if not user:
-            return jsonify({"message":"Sorry, user not found"}), 404
+            return jsonify({"message":"Invalid user"}), 404
+        
+        has_password = user[6]
+        email = user[4]
+        
+        if has_password is not None:             
+            return jsonify({'message': 'has password'})
+        
+        otp = randint(100000, 999999)
+        hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
 
         # msg = Message(subject="OTP", sender="ajnetworks54779@gmail.com", recipients= [email])
         # msg.body=str(otp)
         # mail.send(msg)
 
         current_time = datetime.now()
-        expiry = current_time + timedelta(minutes=5)
-        # Convert expiry to milliseconds
+        expiry = current_time + timedelta(minutes=60)
         expire_ms = expiry.timestamp() * 1000
 
-        student_id = user[3]
-
-        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE student_id = %s",
-                                (hashed_otp, str(expire_ms), student_id))
+        # cursor.execute('SELECT * FROM srtauthwqs WHERE email = %s', (email,))
+        # auth = cursor.fetchone()
+        # verified = auth[4]
+        
+        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE email = %s",
+                                (hashed_otp, str(expire_ms), email))
         mysql.connection.commit()
 
         return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
         
     except Exception as e:
-        return jsonify({"message": f"Error {str(e)}"}), 400
+        return jsonify({"message": f"Error {str(e)}"}), 500
     

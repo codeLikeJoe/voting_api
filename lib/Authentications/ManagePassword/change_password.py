@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify, session, current_app
 from datetime import datetime, timedelta
 from lib.Authentications.token.token_requirement import TokenRequirement
+import jwt
 
 change_password = Blueprint('_change_password', __name__)
 token_requirement = TokenRequirement(change_password)
@@ -12,32 +13,46 @@ def index():
     bcrypt = current_app.extensions['bcrypt']
     
     try:
-        received_otp = request.form['otp']
+        token = request.args.get('token')
 
-        email = session.get('forgot_password_email')
+        old_password = request.form['old_password']
+        new_password = request.form['new_password']
+        confirm_password = request.form['confirm_password']
+
+        try:
+            data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
+        except jwt.InvalidTokenError:
+            return jsonify({'message': 'Invalid token'}), 401
+        
+        expiry = data.get('expiry')
+        student_id = data.get('student_id')
+
+        current_time = datetime.now().timestamp() * 1000
+        # Checking if the OTP has expired
+        if current_time > float(expiry):
+            return jsonify({"message": "token has expired"}), 403
 
         cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM srtauthwq WHERE email=%s", (email,))
-        user = cursor.fetchone()
 
-        # otp = session.get('forgot_password_otp')
-        # otp_expiry = session.get('otp_expiry')
+        cursor.execute('SELECT * FROM users WHERE student_id = %s', (student_id,))
+        student = cursor.fetchone()
 
-        hashed_otp_from_db = user[3]
-        otp_expiry = user[4]
-        current_time = datetime.now().timestamp() * 1000
+        database_password = student[6]
 
-        # if email:
-        #     if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-        #         if current_time < float(otp_expiry):
-        #             session['reset password'] = True
-        #             session['email'] = email
-        #             return jsonify({"message": "verified successfully"}), 200
-        #         else:
-        #             return jsonify({"message": "sorry, the OTP code has expired!"}), 400
-        #     return jsonify({"message": "Invalid OTP. Please try again."}), 400
-        # else:
-        #     return jsonify({"message": "Verification failed"}), 400
-    
+        # checking if old password matches
+        if not bcrypt.check_password_hash(database_password, old_password):
+            return jsonify({'message': 'Invalid old password'}), 400
+        
+        if new_password != confirm_password:
+            return jsonify({'message': 'Password mismatch'}), 400
+        
+        hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+
+        cursor.execute("UPDATE users SET password = %s WHERE student_id = %s",
+                                    (hashed_password, student_id))
+        mysql.connection.commit()
+
+        return jsonify({'message': 'Password changed successfully'}), 200
+
     except Exception as e:
-        return jsonify({"message": f"Error {str(e)}"}), 400
+        return jsonify({"Error": f"Error {str(e)}"}), 400
