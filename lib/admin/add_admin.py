@@ -28,7 +28,7 @@ def index():
         
         cursor.execute("SELECT * FROM roles WHERE title = %s", (role,))
         _role = cursor.fetchone()
-        if not _role:
+        if _role is None:
             return jsonify({"Error": f"{role} is not a role"}), 400
         
         if len(password) < 6:
@@ -49,8 +49,12 @@ def index():
                        (email, hashed_password, current_time, role))
         mysql.connection.commit()
 
-        cursor.execute("INSERT INTO srtauthwqs (email, verified, new_admin) VALUES (%s, %s, %s)",
-                       (email, 'Yes', 'Yes'))
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        new_user = cursor.fetchone()
+        user_id = new_user[0]
+
+        cursor.execute("INSERT INTO srtauthwqs (user_id, verified, new_admin) VALUES (%s, %s, %s)",
+                       (user_id, 'Yes', 'Yes'))
         mysql.connection.commit()
         
         return jsonify({

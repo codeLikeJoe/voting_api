@@ -13,9 +13,9 @@ def edit_index(election_id):
     if request.method == 'PUT':
 
         try:
-            title = request.form['title'].lower()
-            start_datetime_str = request.form['start_datetime']
-            end_datetime_str = request.form['end_datetime']
+            title = request.form.get('title').lower()
+            start_datetime_str = request.form.get('start_datetime')
+            end_datetime_str = request.form.get('end_datetime')
 
             datetime_format = "%Y-%m-%d %H:%M"
 
@@ -33,36 +33,41 @@ def edit_index(election_id):
             cursor = mysql.connection.cursor()
             
             # Fetch the existing election details
-            cursor.execute("SELECT * FROM elections WHERE election_id = %s", (election_id,))
+            cursor.execute("SELECT * FROM election WHERE election_id = %s", (election_id,))
             election = cursor.fetchone()
 
             if not election:
                 return jsonify({"message": "Election not found"}), 404
+            
+            # Fetch the existing election details
+            cursor.execute("SELECT * FROM election WHERE election_title = %s", (title,))
+            election_title = cursor.fetchone()
+
+            if election_title:
+                return jsonify({"message": "title already exist"}), 404
 
             # Update the election
             cursor.execute("""
-                UPDATE elections 
+                UPDATE election 
                 SET election_title = %s, 
-                    start_date = %s, 
-                    end_date = %s
+                    start_datetime = %s, 
+                    end_datetime = %s
                 WHERE election_id = %s
             """, (title, start_datetime, end_datetime, election_id))
-
             mysql.connection.commit()
 
-            # cursor.execute("SELECT * FROM elections WHERE election_id = %s", (election_id,))
-            # election = cursor.fetchone()
+            cursor.execute("SELECT * FROM election WHERE election_id = %s", (election_id,))
+            get_election = cursor.fetchone()
 
-            # Prepare the response
             response_data = {
-                "election_id": election[0],
-                "election_title": election[1].upper(),
-                "serial_code": election[2],
-                "start_date": election[3].strftime("%a, %d %b %Y %H:%M"),
-                "end_date": election[4].strftime("%a, %d %b %Y %H:%M"),
-                "date_created": election[5],
+                "election_id": get_election[0],
+                "election_title": get_election[1],
+                "serial_code": get_election[2],
+                "start_date": get_election[3].strftime("%a, %d %b %Y %H:%M"),
+                "end_date": get_election[4].strftime("%a, %d %b %Y %H:%M"),
+                "date_created": get_election[5],
             }
-            return jsonify(response_data), 200
+            return jsonify({'message': 'successful', 'response_data': response_data}), 200
             # return jsonify({"message": f"Election with ID {election_id} has been updated successfully"}), 200
 
         except Exception as e:
@@ -74,7 +79,7 @@ def edit_index(election_id):
         try:
             # Fetch the election details
             cursor = mysql.connection.cursor()
-            cursor.execute("SELECT * FROM elections WHERE election_id = %s", (election_id,))
+            cursor.execute("SELECT * FROM election WHERE election_id = %s", (election_id,))
             election = cursor.fetchone()
 
             if not election:
@@ -83,7 +88,7 @@ def edit_index(election_id):
             # Prepare the response
             response_data = {
                 "election_id": election[0],
-                "election_title": election[1].upper(),
+                "election_title": election[1],
                 "serial_code": election[2],
                 "start_date": election[3].strftime("%a, %d %b %Y %H:%M"),
                 "end_date": election[4].strftime("%a, %d %b %Y %H:%M"),
@@ -102,7 +107,7 @@ def edit_index(election_id):
             cursor = mysql.connection.cursor()
             
             # Delete the election
-            cursor.execute("DELETE FROM elections WHERE election_id = %s", (election_id,))
+            cursor.execute("DELETE FROM election WHERE election_id = %s", (election_id,))
             mysql.connection.commit()
             
             if cursor.rowcount > 0:

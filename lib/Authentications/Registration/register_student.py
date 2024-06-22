@@ -16,9 +16,10 @@ def index():
     try:
         firstname = request.form.get('firstname').lower()
         lastname = request.form.get('lastname').lower()
-        email = request.form.get('email').lower()
+        email = request.form.get('email')
         student_id = request.form.get('student_id').lower()
         program_code = request.form.get('program_code').lower()
+        year_of_admission = request.form.get('year_of_admission')
 
         role = 'student'
 
@@ -28,13 +29,13 @@ def index():
         user = cursor.fetchone()
 
         if user:
-            return jsonify({"message": "user already exists"}), 400
+            return jsonify({"message": "student_id or email already exists"}), 400
         
 
-        cursor.execute("SELECT * FROM programs WHERE code = %s", (program_code,))
-        _programCode = cursor.fetchone()
+        cursor.execute("SELECT * FROM program WHERE program_code = %s", (program_code,))
+        _program = cursor.fetchone()
 
-        if not _programCode:
+        if _program is None:
             return jsonify({"message": "The program does not exist"}), 404
         
         
@@ -50,19 +51,33 @@ def index():
         # expire_ms = expiry.timestamp() * 1000
 
 
-        # Inserting new user
-        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program, date_created, role) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                    (firstname, lastname, student_id, email, program_code, current_time, role))
+        program_id = _program[0]
+        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program_id, date_created, role, year_of_admission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (firstname, lastname, student_id, email, program_id, current_time, role, year_of_admission))
         mysql.connection.commit()
 
-        cursor.execute("INSERT INTO srtauthwqs (email) VALUES (%s)",
-                    (email,),)
+        cursor.execute("SELECT * FROM users WHERE student_id = %s OR email = %s", (student_id, email))
+        new_user = cursor.fetchone()
+
+        user_id = new_user[0]
+        cursor.execute("INSERT INTO srtauthwqs (user_id) VALUES (%s)",
+                    (user_id,),)
         mysql.connection.commit()
+
+        response_data = {
+            'user_id': user_id,
+            'name': f'{new_user[1]} {new_user[2]}',
+            'index number': new_user[3],
+            'email': new_user[4],
+            'program': program_code,
+            'year_of_admission': new_user[9]
+        }
 
         
         return jsonify({
-            "message": f"Student with ID: {student_id}, has been added successfully",
+            "message": f"added successfully",
             # "otp": otp,
+            'user': response_data
             }), 201
     
     except Exception as e:

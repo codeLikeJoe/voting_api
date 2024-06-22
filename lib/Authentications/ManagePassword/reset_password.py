@@ -16,13 +16,17 @@ def index():
 
         cursor = mysql.connection.cursor()
 
-        cursor.execute('SELECT * FROM srtauthwqs WHERE email = %s', (email,))
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
         user = cursor.fetchone()
-        if not user:
+        if user is None:
             return jsonify({'message':'Inavalid user'}), 404
         
-        new_admin = user[5]
-        can_set_Password = user[6]
+        user_id = user[0]
+        cursor.execute('SELECT * FROM srtauthwqs WHERE user_id = %s', (user_id,))
+        auth = cursor.fetchone()
+        
+        new_admin = auth[5]
+        can_set_Password = auth[6]
         if can_set_Password != 'Yes':
             return jsonify({"Error":"sorry, unable to reset password"}), 403
 
@@ -39,13 +43,13 @@ def index():
                             (hashed_password, email))
         mysql.connection.commit()
 
-        cursor.execute('UPDATE srtauthwqs SET can_set_password = %s WHERE email = %s', 
-                        (None, email))
+        cursor.execute('UPDATE srtauthwqs SET can_set_password = %s WHERE user_id = %s', 
+                        (None, user_id))
         mysql.connection.commit()
 
         if new_admin == 'Yes':
-            cursor.execute('UPDATE srtauthwqs SET new_admin = %s WHERE email = %s', 
-                        (None, email))
+            cursor.execute('UPDATE srtauthwqs SET new_admin = %s WHERE user_id = %s', 
+                        (None, user_id))
             mysql.connection.commit()
 
         return jsonify({"message": f"password updated successfully."}), 200

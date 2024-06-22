@@ -9,10 +9,10 @@ def get_elections():
 
     try:
         cursor = mysql.connection.cursor()
-        cursor.execute('SELECT * FROM elections')
+        cursor.execute('SELECT * FROM election')
         elections = cursor.fetchall()
 
-        if not elections:
+        if elections is None:
             return jsonify({'message': 'There are no elections available'}), 404
         
         response_data = []
