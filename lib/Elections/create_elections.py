@@ -14,9 +14,12 @@ def index():
     mysql = current_app.extensions['mysql']
 
     try:
-        title = request.form['title'].lower()
-        start_datetime_str = request.form['start_datetime']
-        end_datetime_str = request.form['end_datetime']
+        title = request.form.get('title').lower()
+        start_datetime_str = request.form.get('start_datetime')
+        end_datetime_str = request.form.get('end_datetime')
+
+        if not title or not start_datetime_str or not end_datetime_str:
+            return jsonify({'message': 'all fields are required'}), 400
 
         datetime_format = "%Y-%m-%d %H:%M"
 
@@ -33,7 +36,7 @@ def index():
 
         cursor = mysql.connection.cursor()
         
-        cursor.execute("SELECT * FROM elections WHERE election_title = %s", (title,))
+        cursor.execute("SELECT * FROM election WHERE election_title = %s", (title,))
         election = cursor.fetchone()
 
         if election:
@@ -41,7 +44,7 @@ def index():
         
         code = randint(10000, 99999)
         while True:
-            cursor.execute("SELECT * FROM elections WHERE serial_code = %s", (code,))
+            cursor.execute("SELECT * FROM election WHERE serial_code = %s", (code,))
             existing_code = cursor.fetchone()
             if not existing_code:
                 break  # Exit the loop if no existing code found
@@ -52,13 +55,13 @@ def index():
 
         date_created = datetime.now()
         
-        cursor.execute("""INSERT INTO elections (election_id, election_title, serial_code, 
-                       start_date, end_date, date_created) VALUES (%s, %s, %s, %s, %s, %s)""",
+        cursor.execute("""INSERT INTO election (election_id, election_title, serial_code, 
+                       start_datetime, end_datetime, date_created) VALUES (%s, %s, %s, %s, %s, %s)""",
                     (None, title, code, start_datetime, end_datetime, date_created))
         mysql.connection.commit()
 
 
-        cursor.execute("SELECT * FROM elections WHERE serial_code = %s", (code,))
+        cursor.execute("SELECT * FROM election WHERE serial_code = %s", (code,))
         election = cursor.fetchone()
 
 
@@ -67,13 +70,13 @@ def index():
 
         response_data = {
             "election_id": election[0],
-            "election_title": election[1].upper(),
+            "election_title": election[1],
             "serial_code": election[2],
             "start_date": election[3].strftime("%a, %d %b %Y %H:%M"),
             "end_date": election[4].strftime("%a, %d %b %Y %H:%M"),
             "date_created": election[5],
         }
-        return jsonify({"message":f"{str(title)} has been added successfully", 'record': response_data}), 200
+        return jsonify({"message":"successful", 'record': response_data}), 201
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400

@@ -1,19 +1,17 @@
 # from dotenv import load_dotenv
+# load_dotenv()
 # from datetime import datetime, timedelta
-from flask import Flask
+from flask import Flask, g
 from flask_mysqldb import MySQL
 from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from config import mail_config, database_config
 from register_blueprints import register_blueprints
 from lib.error_handlers import method_not_allowed, not_found
-# import os
+import os
 
 
 app = Flask(__name__)
-
-# load_dotenv()
-# secretKey = os.getenv("API_SECRET")
 
 
 # Mail Configration

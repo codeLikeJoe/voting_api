@@ -9,26 +9,27 @@ def create_positions_index():
     mysql = current_app.extensions['mysql']
 
     try:
-        position = request.form['position'].lower()
+        position_title = request.form['position_title'].lower()
         cgpa_criteria = request.form['cgpa_criteria']
         fee = request.form['fee']
-        program = request.form['program_code'].lower()
+        program_id = request.form['program_id']
         election_id = request.form['election_id']
         start_datetime_str = request.form['start_datetime']
         end_datetime_str = request.form['end_datetime']
 
-        if not position or not cgpa_criteria or not fee or not election_id or not start_datetime_str or not end_datetime_str:
+        if not position_title or not cgpa_criteria or not fee or not election_id or not start_datetime_str or not end_datetime_str:
             return jsonify({'message': 'Missing required data'}), 400
 
         cursor = mysql.connection.cursor()
 
 
-        cursor.execute('SELECT * FROM elections WHERE election_id = %s', (election_id,))
+        cursor.execute('SELECT * FROM election WHERE election_id = %s', (election_id,))
         _election = cursor.fetchone()
 
-        election = _election[1]
-        if not _election:
+        if _election is None:
             return jsonify({'message': 'Election is not available'}), 404
+        
+        election = _election[1]
 
         expired = _election[4].strftime("%Y-%m-%d %H:%M")
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -39,18 +40,18 @@ def create_positions_index():
             return jsonify({'message': f'Sorry, {str(election).capitalize()} has already ended'}), 400
 
 
-        if program:
-            cursor.execute('SELECT * FROM programs WHERE code = %s', (program,))
+        if program_id:
+            cursor.execute('SELECT * FROM program WHERE program_id = %s', (program_id,))
             _program = cursor.fetchone()
 
-            if not _program:
+            if _program is None:
                 return jsonify({'message': 'Program does not exist'}), 404
             
-            cursor.execute('SELECT * FROM positions WHERE position = %s AND program = %s AND election_source = %s', 
-                           (position, program, election))
+            cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id = %s AND election_id = %s', 
+                           (position_title, program_id, election_id))
         else:
-            cursor.execute('SELECT * FROM positions WHERE position = %s AND program IS NULL AND election_source = %s', 
-                           (position, election))
+            cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id IS NULL AND election_id = %s', 
+                           (position_title, election_id))
 
 
         _position = cursor.fetchone()
@@ -74,42 +75,42 @@ def create_positions_index():
 
 
         # Inserting the data into the database
-        if program:
-            cursor.execute("""INSERT INTO positions (position, cgpa_criteria, application_fee, program, election_source, 
+        if program_id:
+            cursor.execute("""INSERT INTO positions (position_title, cgpa_criteria, application_fee, program_id, election_id, 
                               application_start_date, application_end_date, date_created) 
                               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", 
-                           (position, cgpa_criteria, fee, program, election, start_datetime, end_datetime, date))
+                           (position_title, cgpa_criteria, fee, program_id, election_id, start_datetime, end_datetime, date))
         else:
-            cursor.execute("""INSERT INTO positions (position, cgpa_criteria, application_fee, program, election_source, 
+            cursor.execute("""INSERT INTO positions (position_title, cgpa_criteria, application_fee, program_id, election_id, 
                               application_start_date, application_end_date, date_created) 
                               VALUES (%s, %s, %s, NULL, %s, %s, %s, %s)""", 
-                           (position, cgpa_criteria, fee, election, start_datetime, end_datetime, date))
+                           (position_title, cgpa_criteria, fee, election_id, start_datetime, end_datetime, date))
         mysql.connection.commit()
 
 
-        if program:
-            cursor.execute('SELECT * FROM positions WHERE position = %s AND program = %s AND election_source = %s', 
-                        (position, program, election))
+        if program_id:
+            cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id = %s AND election_id = %s', 
+                        (position_title, program_id, election_id))
         else:
-            cursor.execute('SELECT * FROM positions WHERE position = %s AND program IS NULL AND election_source = %s', 
-                        (position, election))
+            cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id IS NULL AND election_id = %s', 
+                        (position_title, election_id))
 
 
         get_positions = cursor.fetchone()
         response_data = {
-            'id': get_positions[0],
-            'position': get_positions[1].capitalize(),
+            'positionid': get_positions[0],
+            'position_title': get_positions[1],
             'cgpa_criteria': get_positions[2],
             'application_fee': get_positions[3],
-            'program': get_positions[4].upper() if get_positions[4] is not None else None,
-            'election_source': get_positions[5].capitalize(),
+            'program_id': get_positions[4] if get_positions[4] is not None else None,
+            'election_id': get_positions[5],
             'start_datetime': get_positions[7].strftime("%a, %d %b %Y %H:%M"),
             'end_datetime': get_positions[8].strftime("%a, %d %b %Y %H:%M"),
             'date_created': get_positions[9]
         }
 
         cursor.close()
-        return jsonify({'recorded_data': response_data}), 200
+        return jsonify({'message': 'successful', 'recorded_data': response_data}), 200
 
     except ValueError as ve:
         return jsonify({'error': str(ve)}), 400

@@ -22,11 +22,11 @@ def create_positions_index(id):
             
             response_data = {
                 'position_id': result[0],
-                'position': result[1].capitalize(),
+                'position': result[1],
                 'cgpa_criteria': result[2],
                 'application_fee': result[3],
-                'program': result[4].upper() if result[4] is not None else None,
-                'election_source': result[5].upper(),
+                'program_id': result[4] if result[4] is not None else None,
+                'election_source': result[5],
                 'application_form': result[6] if result[6] is not None else None,
                 'application_start_datetime': result[7].strftime("%a, %d %b %Y %H:%M"),
                 'application_end_datetime': result[8].strftime("%a, %d %b %Y %H:%M"),
@@ -41,37 +41,34 @@ def create_positions_index(id):
     if request.method == 'PUT':
 
         try:
-            position = request.form['position'].lower()
+            position_title = request.form['position_title'].lower()
             cgpa_criteria = request.form['cgpa_criteria']
             fee = request.form['fee']
-            program = request.form['program_code'].lower()
+            program_id = request.form['program_id'].lower()
             election_id = request.form['election_id']
             start_datetime_str = request.form['start_datetime']
             end_datetime_str = request.form['end_datetime']
 
-            if not position or not cgpa_criteria or not fee or not election_id or not start_datetime_str or not end_datetime_str:
+            if not position_title or not cgpa_criteria or not fee or not election_id or not start_datetime_str or not end_datetime_str:
                 return jsonify({'message': 'Missing required data'}), 400
 
             cursor = mysql.connection.cursor()
 
 
-            cursor.execute('SELECT * FROM elections WHERE election_id = %s', (election_id,))
+            cursor.execute('SELECT * FROM election WHERE election_id = %s', (election_id,))
             _election = cursor.fetchone()
 
-            if not _election:
+            if _election is None:
                 return jsonify({'message': 'Election is not available'}), 404
             
             election = _election[1]
-            if not _election:
-                return jsonify({'message': 'Election is not available'}), 404
-
             expired = _election[4].strftime("%Y-%m-%d %H:%M")
             now = datetime.now().strftime("%Y-%m-%d %H:%M")
             # print(expired)
             # print(now)
             # Check if the election has ended
             if now >= expired:
-                return jsonify({'message': f'Sorry, {str(election).capitalize()} has already ended'}), 400
+                return jsonify({'message': f'Sorry, {str(election)} has already ended'}), 400
             
 
             datetime_format = "%Y-%m-%d %H:%M"
@@ -89,22 +86,22 @@ def create_positions_index(id):
             end_datetime = datetime.strptime(end_datetime_str, datetime_format)
 
 
-            if program:
-                cursor.execute('SELECT * FROM programs WHERE code = %s', (program,))
+            if program_id:
+                cursor.execute('SELECT * FROM program WHERE program_id = %s', (program_id,))
                 _program = cursor.fetchone()
 
-                if not _program:
+                if _program is None:
                     return jsonify({'message': 'Program does not exist'}), 404
                 
-                cursor.execute("""SELECT * FROM positions WHERE position = %s AND program = %s AND 
-                               election_source = %s AND cgpa_criteria = %s AND application_fee = %s 
+                cursor.execute("""SELECT * FROM positions WHERE position_title = %s AND program_id = %s AND 
+                               election_id = %s AND cgpa_criteria = %s AND application_fee = %s 
                                AND application_start_date = %s AND application_end_date = %s""", 
-                            (position, program, election, cgpa_criteria, fee, start_datetime, end_datetime))
+                            (position_title, program_id, election_id, cgpa_criteria, fee, start_datetime, end_datetime))
             else:
-                cursor.execute("""SELECT * FROM positions WHERE position = %s AND program IS NULL AND 
-                               election_source = %s AND cgpa_criteria = %s AND application_fee = %s 
+                cursor.execute("""SELECT * FROM positions WHERE position_title = %s AND program_id IS NULL AND 
+                               election_id = %s AND cgpa_criteria = %s AND application_fee = %s 
                                AND application_start_date = %s AND application_end_date = %s""", 
-                            (position, election, cgpa_criteria, fee, start_datetime, end_datetime))
+                            (position_title, election_id, cgpa_criteria, fee, start_datetime, end_datetime))
 
 
             _position = cursor.fetchone()
@@ -117,43 +114,43 @@ def create_positions_index(id):
 
 
             # Inserting the data into the database
-            if program:
-                cursor.execute("""UPDATE positions SET position = %s, cgpa_criteria = %s, application_fee = %s, program = %s, 
-                                election_source = %s, application_start_date = %s, application_end_date = %s 
+            if program_id:
+                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, application_fee = %s, program_id = %s, 
+                                election_id = %s, application_start_date = %s, application_end_date = %s 
                                 WHERE position_id = %s""", 
-                            (position, cgpa_criteria, fee, program, election, start_datetime, end_datetime, id))
+                            (position_title, cgpa_criteria, fee, program_id, election_id, start_datetime, end_datetime, id))
             else:
-                cursor.execute("""UPDATE positions SET position = %s, cgpa_criteria = %s, application_fee = %s, program = NULL, 
-                                election_source = %s, application_start_date = %s, application_end_date = %s 
+                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, application_fee = %s, program_id = NULL, 
+                                election_id = %s, application_start_date = %s, application_end_date = %s 
                                 WHERE position_id = %s""", 
-                            (position, cgpa_criteria, fee, election, start_datetime, end_datetime, id))
+                            (position_title, cgpa_criteria, fee, election_id, start_datetime, end_datetime, id))
 
             mysql.connection.commit()
 
 
-            if program:
-                cursor.execute('SELECT * FROM positions WHERE position = %s AND program = %s AND election_source = %s', 
-                            (position, program, election))
+            if program_id:
+                cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id = %s AND election_id = %s', 
+                            (position_title, program_id, election_id))
             else:
-                cursor.execute('SELECT * FROM positions WHERE position = %s AND program IS NULL AND election_source = %s', 
-                            (position, election))
+                cursor.execute('SELECT * FROM positions WHERE position_title = %s AND program_id IS NULL AND election_id = %s', 
+                            (position_title, election_id))
 
 
             get_positions = cursor.fetchone()
             response_data = {
                 'id': get_positions[0],
-                'position': get_positions[1].capitalize(),
+                'position_title': get_positions[1],
                 'cgpa_criteria': get_positions[2],
                 'application_fee': get_positions[3],
-                'program': get_positions[4].upper() if get_positions[4] is not None else None,
-                'election_source': get_positions[5].capitalize(),
+                'program_id': get_positions[4] if get_positions[4] is not None else None,
+                'election_id': get_positions[5],
                 'start_datetime': get_positions[7].strftime("%a, %d %b %Y %H:%M"),
                 'end_datetime': get_positions[8].strftime("%a, %d %b %Y %H:%M"),
                 'date_created': get_positions[9]
             }
 
             cursor.close()
-            return jsonify(response_data), 200
+            return jsonify({'message': 'successful', 'response_data': response_data}), 200
 
         except Exception as e:
             return jsonify({'Error': str(e)}), 400

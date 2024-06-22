@@ -20,8 +20,8 @@ from lib.Candidate.apply_for_position import apply_position as apply_position_bl
 
 # programs
 from lib.programs.add_programs import add_program as add_program_blueprint
-from lib.programs.manage_programs import program as program_blueprint
-from lib.programs.get_program import get_programs as get_programs_blueprint
+from lib.programs.edit_programs import program as program_blueprint
+from lib.programs.programs import get_programs as get_programs_blueprint
 
 # admin
 from lib.admin.add_admin import add_admin as add_admin_blueprint

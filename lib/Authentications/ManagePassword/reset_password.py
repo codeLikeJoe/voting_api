@@ -7,50 +7,53 @@ def index():
     mysql = current_app.extensions['mysql']
 
     try:
-        email = request.form['email']
-        new_password = request.form['password']
-        confirm_password = request.form['confirm_password']
+        email = request.form.get('email')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
 
-        # confirm_forgot_password = session.get('reset password')
-        # email = session.get('email')
+        if not email or not new_password or not confirm_password:
+            return jsonify({'message': 'all fields are required'})
 
         cursor = mysql.connection.cursor()
 
-        cursor.execute('SELECT * FROM students WHERE email = %s', (email,))
+        cursor.execute('SELECT * FROM users WHERE email = %s', (email,))
         user = cursor.fetchone()
+        if user is None:
+            return jsonify({'message':'Inavalid user'}), 404
+        
+        user_id = user[0]
+        cursor.execute('SELECT * FROM srtauthwqs WHERE user_id = %s', (user_id,))
+        auth = cursor.fetchone()
+        
+        new_admin = auth[5]
+        can_set_Password = auth[6]
+        if can_set_Password != 'Yes':
+            return jsonify({"Error":"sorry, unable to reset password"}), 403
 
-        student_id = user[3]
-        print(student_id)
+        if confirm_password != new_password:
+            return jsonify({"Error": "password mismatch!"}), 400
 
-        cursor.execute('SELECT * FROM srtauthwqs WHERE student_id = %s', (student_id,))
-        student = cursor.fetchone()
+        if len(new_password) < 6:
+            return jsonify({"message": "Password must be at least 6 characters long."}), 400
 
-        canResetPassword = student[5]
-        print(canResetPassword)
+        bcrypt = current_app.extensions['bcrypt']        
+        hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        if canResetPassword == 'Yes':
-            if confirm_password == new_password:
-                bcrypt = current_app.extensions['bcrypt']
+        cursor.execute("UPDATE users SET password = %s WHERE email = %s",
+                            (hashed_password, email))
+        mysql.connection.commit()
 
+        cursor.execute('UPDATE srtauthwqs SET can_set_password = %s WHERE user_id = %s', 
+                        (None, user_id))
+        mysql.connection.commit()
 
-                if len(new_password) < 6:
-                    return jsonify({"message": "Password must be at least 6 characters long."}), 400
-                
-                hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
+        if new_admin == 'Yes':
+            cursor.execute('UPDATE srtauthwqs SET new_admin = %s WHERE user_id = %s', 
+                        (None, user_id))
+            mysql.connection.commit()
 
-                cursor.execute("UPDATE students SET password = %s WHERE email = %s",
-                                    (hashed_password, email))
-                mysql.connection.commit()
-
-                cursor.execute('UPDATE srtauthwqs SET reset_password = %s WHERE student_id = %s', 
-                               ('No', student_id))
-                mysql.connection.commit()
-
-                return jsonify({"message": f"User ({email}) password updated successfully."}), 200
-            else:
-                return jsonify({"message": "password mismatch!"}), 400
-        else:
-            return jsonify({"message":"sorry, unable to reset password"}), 400
+        return jsonify({"message": f"password updated successfully."}), 200
+        
     except Exception as e:
         return jsonify({"Error":f"{str(e)}"}), 400
     

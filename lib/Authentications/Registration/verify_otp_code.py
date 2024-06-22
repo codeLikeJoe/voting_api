@@ -11,25 +11,27 @@ def index():
     bcrypt = current_app.extensions['bcrypt']
 
     try:
-        email = request.form['email']
-        received_otp = request.form['otp']
+        email = request.form.get('email')
+        received_otp = request.form.get('otp')
+
+        if not email or not received_otp:
+            return jsonify({"message": "email and otp required"}), 400
 
         cursor = mysql.connection.cursor()
 
 
-        cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
         
         if not user:
             return jsonify({"message": "user not found"}), 404
         
-        student_id = user[3]
         
-        cursor.execute("SELECT * FROM srtauthwqs WHERE student_id = %s", (student_id,))
-        student = cursor.fetchone()
+        cursor.execute("SELECT * FROM srtauthwqs WHERE email = %s", (email,))
+        srtauthwq = cursor.fetchone()
 
-        hashed_otp_from_db = student[2]
-        otp_expiry = student[3]
+        hashed_otp_from_db = srtauthwq[2]
+        otp_expiry = srtauthwq[3]
 
         current_time = datetime.now().timestamp() * 1000
 
@@ -40,8 +42,8 @@ def index():
 
         # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE srtauthwqs SET verified = %s, reset_password = %s WHERE student_id = %s",
-                                    ("Yes", "Yes", student_id))
+            cursor.execute("UPDATE srtauthwqs SET verified = %s, can_set_password = %s WHERE email = %s",
+                                    ("Yes", "Yes", email))
             mysql.connection.commit()
 
             return jsonify({"message": "OTP verified successfully"}), 200
@@ -49,4 +51,4 @@ def index():
             return jsonify({"message": "Invalid OTP"}), 401
 
     except Exception as e:
-        return jsonify({"error": f"{str(e)}"})
+        return jsonify({"error": f"{str(e)}"}), 500

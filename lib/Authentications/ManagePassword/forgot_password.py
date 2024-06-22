@@ -16,7 +16,7 @@ def forgotpassword():
     try:
         email = request.form['email']
 
-        cursor.execute("SELECT * FROM students WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
 
         if not user:
@@ -33,13 +33,13 @@ def forgotpassword():
         # Converting expiry to milliseconds
         expire_ms = expiry.timestamp() * 1000
 
-        student_id = user[3]
+        # student_id = user[3]
 
-        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE student_id = %s",
-                            (hashed_otp, str(expire_ms), student_id))
+        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE email = %s",
+                            (hashed_otp, str(expire_ms), email))
         mysql.connection.commit()
 
         return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
         
     except Exception as e:
-        return jsonify({"message": f"Error {str(e)}"}), 400
+        return jsonify({"message": f"Error {str(e)}"}), 500
