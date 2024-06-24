@@ -21,8 +21,6 @@ def index():
         program_code = request.form.get('program_code').lower()
         year_of_admission = request.form.get('year_of_admission')
 
-        role = 'student'
-
         cursor = mysql.connection.cursor()
 
         cursor.execute("SELECT * FROM users WHERE student_id = %s OR email = %s", (student_id, email))
@@ -50,10 +48,14 @@ def index():
         # expiry = current_time + timedelta(hours=24)
         # expire_ms = expiry.timestamp() * 1000
 
+        cursor.execute("SELECT * FROM roles WHERE title = %s", ('student',))
+        role = cursor.fetchone()
+        role_id = role[0]
+
 
         program_id = _program[0]
-        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program_id, date_created, role, year_of_admission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    (firstname, lastname, student_id, email, program_id, current_time, role, year_of_admission))
+        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program_id, date_created, role_id, year_of_admission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                    (firstname, lastname, student_id, email, program_id, current_time, role_id, year_of_admission))
         mysql.connection.commit()
 
         cursor.execute("SELECT * FROM users WHERE student_id = %s OR email = %s", (student_id, email))

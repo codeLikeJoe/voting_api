@@ -1,12 +1,30 @@
 from flask import Blueprint, request, jsonify, current_app
 from datetime import datetime
 import re
+import jwt
+from lib.Authentications.token.token_requirement import TokenRequirement
 
 create_positions = Blueprint('_create_positions', __name__)
+token_requirement = TokenRequirement(create_positions)
 
 @create_positions.route('/create_positions', methods=['POST'])
+@token_requirement.token_required
 def create_positions_index():
     mysql = current_app.extensions['mysql']
+    token = request.args.get('token')
+
+    try:
+        data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token'}), 401
+    
+    expiry = data.get('expiry')
+    user_id = data.get('user_id')
+
+    current_time = datetime.now().timestamp() * 1000
+    
+    if current_time > float(expiry):
+        return jsonify({"message": "token has expired"}), 403
 
     try:
         position_title = request.form['position_title'].lower()

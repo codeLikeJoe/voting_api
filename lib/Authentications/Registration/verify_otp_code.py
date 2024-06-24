@@ -26,8 +26,8 @@ def index():
         if not user:
             return jsonify({"message": "user not found"}), 404
         
-        
-        cursor.execute("SELECT * FROM srtauthwqs WHERE email = %s", (email,))
+        user_id = user[0]
+        cursor.execute("SELECT * FROM srtauthwqs WHERE user_id = %s", (user_id,))
         srtauthwq = cursor.fetchone()
 
         hashed_otp_from_db = srtauthwq[2]
@@ -42,8 +42,8 @@ def index():
 
         # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE srtauthwqs SET verified = %s, can_set_password = %s WHERE email = %s",
-                                    ("Yes", "Yes", email))
+            cursor.execute("UPDATE srtauthwqs SET verified = %s, can_set_password = %s WHERE user_id = %s",
+                                    ("Yes", "Yes", user_id))
             mysql.connection.commit()
 
             return jsonify({"message": "OTP verified successfully"}), 200

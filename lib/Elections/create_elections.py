@@ -2,18 +2,37 @@ from flask import Blueprint, request, jsonify,current_app
 from random import *
 from datetime import datetime, timedelta
 import re
+import jwt
+from lib.Authentications.token.token_requirement import TokenRequirement
 
 # DATE_FORMAT = '%Y-%m-%d'
 
 
 create_elections = Blueprint('_create_elections', __name__)
+token_requirement = TokenRequirement(create_elections)
 
 
 @create_elections.route('/create_elections', methods=['POST'])
+@token_requirement.token_required
 def index():
     mysql = current_app.extensions['mysql']
+    token = request.args.get('token')
 
     try:
+        data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token'}), 401
+    
+    expiry = data.get('expiry')
+    user_id = data.get('user_id')
+
+    current_time = datetime.now().timestamp() * 1000
+    
+    if current_time > float(expiry):
+        return jsonify({"message": "token has expired"}), 403
+
+    try:
+        
         title = request.form.get('title').lower()
         start_datetime_str = request.form.get('start_datetime')
         end_datetime_str = request.form.get('end_datetime')

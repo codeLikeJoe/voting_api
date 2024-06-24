@@ -9,9 +9,8 @@ def index():
     cursor.execute("SELECT * FROM program")
     programs = cursor.fetchall()
 
-    # Execute a query to count the total number of programs
     cursor.execute("SELECT COUNT(*) FROM program")
-    total_programs = cursor.fetchone()[0] # Fetch the count from the first (and only) row
+    total_programs = cursor.fetchone()[0]
 
     program_list = []
 

@@ -25,19 +25,19 @@ def index():
             return jsonify({'message': 'Invalid token'}), 401
         
         expiry = data.get('expiry')
-        student_id = data.get('student_id')
+        user_id = data.get('user_id')
 
         current_time = datetime.now().timestamp() * 1000
-        # Checking if the OTP has expired
+        
         if current_time > float(expiry):
             return jsonify({"message": "token has expired"}), 403
 
         cursor = mysql.connection.cursor()
 
-        cursor.execute('SELECT * FROM users WHERE student_id = %s', (student_id,))
-        student = cursor.fetchone()
+        cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
+        user = cursor.fetchone()
 
-        database_password = student[6]
+        database_password = user[6]
 
         # checking if old password matches
         if not bcrypt.check_password_hash(database_password, old_password):
@@ -48,8 +48,8 @@ def index():
         
         hashed_password = bcrypt.generate_password_hash(new_password).decode('utf-8')
 
-        cursor.execute("UPDATE users SET password = %s WHERE student_id = %s",
-                                    (hashed_password, student_id))
+        cursor.execute("UPDATE users SET password = %s WHERE id = %s",
+                                    (hashed_password, user_id))
         mysql.connection.commit()
 
         return jsonify({'message': 'Password changed successfully'}), 200

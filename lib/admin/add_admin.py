@@ -12,12 +12,15 @@ def index():
     mail = current_app.extensions['mail']
 
     try:
-        role = request.form.get('role').lower()
+        role_id = request.form.get('role_id').lower()
         email = request.form.get('email')
         password = request.form.get('key')
 
-        if not email or not role or not password:
+        if not email or not role_id or not password:
             return jsonify({'Error': 'all fields are required'})
+        
+        if role_id == '1':
+            return jsonify({'error': 'this role can not be assigned to an administrator'}), 400
 
         cursor = mysql.connection.cursor()
 
@@ -26,10 +29,14 @@ def index():
         if user:
             return jsonify({"message": "User already exists"}), 400
         
-        cursor.execute("SELECT * FROM roles WHERE title = %s", (role,))
+        cursor.execute("SELECT * FROM roles WHERE id = %s", (role_id,))
         _role = cursor.fetchone()
         if _role is None:
-            return jsonify({"Error": f"{role} is not a role"}), 400
+            return jsonify({"Error": "this role does not exist"}), 400
+        
+        cursor.execute('select * from users where role_id = %s', (role_id,))
+        if cursor.rowcount > 0:
+            return jsonify({'error': 'sorry, the accepted number of persons for this role is up'}), 400
         
         if len(password) < 6:
             return jsonify({"message": "Password must be at least 6 characters long."}), 400
@@ -45,8 +52,8 @@ def index():
         # mail.send(msg)
 
         current_time = datetime.now()
-        cursor.execute("INSERT INTO users (email, password, date_created, role) VALUES (%s, %s, %s, %s)",
-                       (email, hashed_password, current_time, role))
+        cursor.execute("INSERT INTO users (email, password, date_created, role_id) VALUES (%s, %s, %s, %s)",
+                       (email, hashed_password, current_time, role_id))
         mysql.connection.commit()
 
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
@@ -56,9 +63,22 @@ def index():
         cursor.execute("INSERT INTO srtauthwqs (user_id, verified, new_admin) VALUES (%s, %s, %s)",
                        (user_id, 'Yes', 'Yes'))
         mysql.connection.commit()
+
+        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        get_user = cursor.fetchone()
+        
+        cursor.execute("SELECT * FROM roles WHERE id = %s", (role_id,))
+        get_role = cursor.fetchone()
+
+        response_data = {
+            'user_id':get_user[0],
+            'email':get_user[4],
+            'role':get_role[1],
+        }
         
         return jsonify({
-            "message": f"New Administrator has been added successfully",
+            "message": "successful",
+            'response_data': response_data
         }), 201
     
     except Exception as e:

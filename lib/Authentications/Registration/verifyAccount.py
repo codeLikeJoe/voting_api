@@ -32,6 +32,7 @@ def verify():
         if not user:
             return jsonify({"message":"Invalid user"}), 404
         
+        user_id = user[0]
         has_password = user[6]
         email = user[4]
         
@@ -53,8 +54,8 @@ def verify():
         # auth = cursor.fetchone()
         # verified = auth[4]
         
-        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE email = %s",
-                                (hashed_otp, str(expire_ms), email))
+        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE user_id = %s",
+                                (hashed_otp, str(expire_ms), user_id))
         mysql.connection.commit()
 
         return jsonify({"message": "OTP sent successfully", "otp":otp}), 200

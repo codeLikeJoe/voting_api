@@ -1,12 +1,31 @@
 from flask import Blueprint, request, jsonify,current_app
+import jwt
+from datetime import datetime
+from lib.Authentications.token.token_requirement import TokenRequirement
 
 
 program = Blueprint('_program', __name__)
+token_requirement = TokenRequirement(program)
 
 
 @program.route('/program/<int:id>', methods=['PUT', 'GET', 'DELETE'])
+@token_requirement.token_required
 def index(id):
     mysql = current_app.extensions['mysql']
+    token = request.args.get('token')
+
+    try:
+        data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({'message': 'Invalid token'}), 401
+    
+    expiry = data.get('expiry')
+    user_id = data.get('user_id')
+
+    current_time = datetime.now().timestamp() * 1000
+    
+    if current_time > float(expiry):
+        return jsonify({"message": "token has expired"}), 403
 
     try:
         cursor = mysql.connection.cursor()
