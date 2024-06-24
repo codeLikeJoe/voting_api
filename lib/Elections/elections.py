@@ -30,4 +30,4 @@ def get_elections():
         return jsonify({'elections': response_data}), 200
 
     except Exception as e:
-        return jsonify({'Error': str(e)}), 400
+        return jsonify({'Error': str(e)}), 500

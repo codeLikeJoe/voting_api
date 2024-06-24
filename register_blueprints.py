@@ -36,6 +36,11 @@ from lib.Positions.positions import positions as positions_blueprint
 from lib.Positions.create_positions import create_positions as create_positions_blueprint 
 from lib.Positions.edit_position import edit_positions as edit_positions_blueprint 
 
+# roles
+from lib.Roles.add_roles import adding_roles as add_roles_blueprint
+from lib.Roles.roles import roles as roles_blueprint
+from lib.Roles.edit_roles import edit_roles as edit_roles_blueprint
+
 # Register the blueprints
 def register_blueprints(app):
     # login
@@ -75,4 +80,9 @@ def register_blueprints(app):
     app.register_blueprint(positions_blueprint)
     app.register_blueprint(create_positions_blueprint)
     app.register_blueprint(edit_positions_blueprint)
+
+    # roles
+    app.register_blueprint(add_roles_blueprint)
+    app.register_blueprint(roles_blueprint)
+    app.register_blueprint(edit_roles_blueprint)
     
