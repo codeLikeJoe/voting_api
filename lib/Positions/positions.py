@@ -26,7 +26,9 @@ def get_positions():
                 'election_id': position[5],
                 'start_datetime': position[7].strftime("%a, %d %b %Y %H:%M"),
                 'end_datetime': position[8].strftime("%a, %d %b %Y %H:%M"),
-                'date_created': position[9]
+                'date_created': position[9],
+                'number_of_slots': position[10],
+                'slots_available': position[11],
             })
 
         return jsonify({'positions': response_data}), 200

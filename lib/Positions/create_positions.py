@@ -30,6 +30,7 @@ def create_positions_index():
         position_title = request.form['position_title'].lower()
         cgpa_criteria = request.form['cgpa_criteria']
         fee = request.form['fee']
+        number_of_slots = request.form['number_of_slots']
         program_id = request.form['program_id']
         election_id = request.form['election_id']
         start_datetime_str = request.form['start_datetime']
@@ -94,15 +95,21 @@ def create_positions_index():
 
         # Inserting the data into the database
         if program_id:
-            cursor.execute("""INSERT INTO positions (position_title, cgpa_criteria, application_fee, program_id, election_id, 
-                              application_start_date, application_end_date, date_created) 
-                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""", 
-                           (position_title, cgpa_criteria, fee, program_id, election_id, start_datetime, end_datetime, date))
+            cursor.execute("""INSERT INTO positions 
+                           (position_title, cgpa_criteria, application_fee, program_id, election_id, 
+                              application_start_date, application_end_date, date_created, 
+                           number_of_slots, slots_available) 
+                              VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                           (position_title, cgpa_criteria, fee, program_id, election_id, 
+                            start_datetime, end_datetime, date, number_of_slots, number_of_slots))
         else:
-            cursor.execute("""INSERT INTO positions (position_title, cgpa_criteria, application_fee, program_id, election_id, 
-                              application_start_date, application_end_date, date_created) 
-                              VALUES (%s, %s, %s, NULL, %s, %s, %s, %s)""", 
-                           (position_title, cgpa_criteria, fee, election_id, start_datetime, end_datetime, date))
+            cursor.execute("""INSERT INTO positions 
+                           (position_title, cgpa_criteria, application_fee, program_id, election_id, 
+                              application_start_date, application_end_date, date_created, 
+                           number_of_slots, slots_available) 
+                              VALUES (%s, %s, %s, NULL, %s, %s, %s, %s, %s, %s)""", 
+                           (position_title, cgpa_criteria, fee, election_id, start_datetime, 
+                            end_datetime, date, number_of_slots, number_of_slots))
         mysql.connection.commit()
 
 
@@ -124,7 +131,8 @@ def create_positions_index():
             'election_id': get_positions[5],
             'start_datetime': get_positions[7].strftime("%a, %d %b %Y %H:%M"),
             'end_datetime': get_positions[8].strftime("%a, %d %b %Y %H:%M"),
-            'date_created': get_positions[9]
+            'date_created': get_positions[9],
+            'number_of_slots': get_positions[10],
         }
 
         cursor.close()
