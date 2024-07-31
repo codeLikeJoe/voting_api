@@ -20,6 +20,7 @@ def index():
         student_id = request.form.get('student_id').lower()
         program_code = request.form.get('program_code').lower()
         year_of_admission = request.form.get('year_of_admission')
+        year_of_completion = request.form.get('year_of_completion')
 
         cursor = mysql.connection.cursor()
 
@@ -54,8 +55,8 @@ def index():
 
 
         program_id = _program[0]
-        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program_id, date_created, role_id, year_of_admission) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    (firstname, lastname, student_id, email, program_id, current_time, role_id, year_of_admission))
+        cursor.execute("INSERT INTO users (first_name, last_name, student_id, email, program_id, date_created, role_id, year_of_admission, year_of_completion) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    (firstname, lastname, student_id, email, program_id, current_time, role_id, year_of_admission, year_of_completion))
         mysql.connection.commit()
 
         cursor.execute("SELECT * FROM users WHERE student_id = %s OR email = %s", (student_id, email))
@@ -68,11 +69,13 @@ def index():
 
         response_data = {
             'user_id': user_id,
-            'name': f'{new_user[1]} {new_user[2]}',
-            'index number': new_user[3],
+            'first_name': new_user[1],
+            'last_name': new_user[2],
+            'student_id': new_user[3],
             'email': new_user[4],
-            'program': program_code,
-            'year_of_admission': new_user[9]
+            'program_id': new_user[5],
+            'year_of_admission': new_user[9],
+            'year_of_completion': new_user[10]
         }
 
         

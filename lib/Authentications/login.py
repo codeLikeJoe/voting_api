@@ -29,10 +29,15 @@ def login():
             return jsonify({"Error": "Invalid user"}), 404
         
         user_id = user[0]
+        first_name = user[1]
+        last_name = user[2]
         student_id = user[3]
         email = user[4]
+        program_id = user[5]
         database_password = user[6]
-        role = user[8]
+        role_id = user[8]
+        year_of_admission = user[9]
+        year_of_completion = user[10]
         
         cursor.execute("SELECT * FROM srtauthwqs WHERE user_id=%s", (user_id,))
         auth = cursor.fetchone()
@@ -52,7 +57,7 @@ def login():
                     cursor.execute('UPDATE srtauthwqs SET can_set_password = %s WHERE user_id = %s', 
                                 ('Yes', user_id))
                     mysql.connection.commit()
-                    return jsonify({'message': 'new admin'})
+                    # return jsonify({'message': 'new admin'})
 
                 cursor.execute('UPDATE srtauthwqs SET can_set_password = %s WHERE user_id = %s', 
                                 (None, user_id))
@@ -68,9 +73,18 @@ def login():
                 }, current_app.config['SECRET_KEY'], algorithm="HS256")
                 
                 return jsonify({
+                    'user_id': user_id,
+                    'first_name': first_name,
+                    'last_name': last_name,
+                    'program_id': program_id,
+                    'email': email,
+                    'student_id': student_id,
+                    'verified': verified,
                     'token': token,
                     'message': 'login successful',
-                    'role': role 
+                    'role_id': role_id, 
+                    'year_of_admission': year_of_admission,
+                    'year_of_completion': year_of_completion,
                     }), 200
             else:
                 return jsonify({'Error':'Invalid credentials'}), 400
