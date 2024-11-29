@@ -50,6 +50,8 @@ def create_positions_index(id):
                 'application_start_datetime': result[7].strftime("%a, %d %b %Y %H:%M"),
                 'application_end_datetime': result[8].strftime("%a, %d %b %Y %H:%M"),
                 'date_created': result[9],
+                'number_of_slots': result[10],
+                'slots_available': result[11],
             }
             return jsonify(response_data), 200
 
@@ -65,6 +67,7 @@ def create_positions_index(id):
             fee = request.form['fee']
             program_id = request.form['program_id'].lower()
             election_id = request.form['election_id']
+            new_slot = request.form['number_of_slots']
             start_datetime_str = request.form['start_datetime']
             end_datetime_str = request.form['end_datetime']
 
@@ -127,22 +130,36 @@ def create_positions_index(id):
             if _position:
                 return jsonify({'message': 'This position already exists'}), 400
             
-            # if not position:
-            #     return jsonify({'message': 'Position does not exists'}), 400
+            # old_slot = _position[10]
+            # slot_available = _position[11]
+
+            # if new_slot < old_slot:
+            #     if old_slot != slot_available:
+            #         return jsonify({'error': 'sorry, cannot edit slot'}), 400
+            #     elif old_slot == slot_available:
+            #         number_of_slots = new_slot
+            #         new_slot_available = new_slot
+            # elif new_slot > old_slot:
+            #     number_of_slots = new_slot
+            #     new_slot_available = slot_available
 
 
 
             # Inserting the data into the database
             if program_id:
-                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, application_fee = %s, program_id = %s, 
-                                election_id = %s, application_start_date = %s, application_end_date = %s 
-                                WHERE position_id = %s""", 
-                            (position_title, cgpa_criteria, fee, program_id, election_id, start_datetime, end_datetime, id))
+                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, 
+                               application_fee = %s, program_id = %s, election_id = %s, 
+                               application_start_date = %s, application_end_date = %s, 
+                             WHERE position_id = %s""", 
+                            (position_title, cgpa_criteria, fee, program_id, election_id, start_datetime, 
+                             end_datetime, id))
             else:
-                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, application_fee = %s, program_id = NULL, 
-                                election_id = %s, application_start_date = %s, application_end_date = %s 
-                                WHERE position_id = %s""", 
-                            (position_title, cgpa_criteria, fee, election_id, start_datetime, end_datetime, id))
+                cursor.execute("""UPDATE positions SET position_title = %s, cgpa_criteria = %s, 
+                               application_fee = %s, program_id = NULL, election_id = %s, 
+                               application_start_date = %s, application_end_date = %s,
+                               WHERE position_id = %s""", 
+                            (position_title, cgpa_criteria, fee, election_id, start_datetime, 
+                             end_datetime, id))
 
             mysql.connection.commit()
 
@@ -165,7 +182,9 @@ def create_positions_index(id):
                 'election_id': get_positions[5],
                 'start_datetime': get_positions[7].strftime("%a, %d %b %Y %H:%M"),
                 'end_datetime': get_positions[8].strftime("%a, %d %b %Y %H:%M"),
-                'date_created': get_positions[9]
+                'date_created': get_positions[9],
+                'number_of_slots': get_positions[10],
+                'slots_available': get_positions[11],
             }
 
             cursor.close()
