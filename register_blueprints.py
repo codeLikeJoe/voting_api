@@ -6,8 +6,8 @@ from lib.home import home as home_blueprint
 
 # add student
 from lib.Authentications.Registration.register_student import register_student as register_student_blueprint
-from lib.Authentications.Registration.verify_otp_code import verify_otp as verify_otp_blueprint
-from lib.Authentications.Registration.verifyAccount import verify_user as verify_user_blueprint
+from lib.Authentications.Registration.verify_otp import verify_otp as verify_otp_blueprint
+from lib.Authentications.Registration.send_otp import verify_user as verify_user_blueprint
 
 from lib.Authentications.login import signInUser as signInUser_blueprint
 

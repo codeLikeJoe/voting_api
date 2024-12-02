@@ -19,25 +19,26 @@ def verify():
         if email or student_id:
             pass
         else:
-            return jsonify({'message': 'Email or student id is required!'}), 400   
+            return jsonify({'message': 'email or student id is required!'}), 400   
         
-        cursor = mysql.connection.cursor()
+        cursor = mysql.connection.cursor() # establish connection
 
         if email:
             cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         elif student_id:
             cursor.execute("SELECT * FROM users WHERE student_id = %s", (student_id,))
 
-        user = cursor.fetchone()
+        user = cursor.fetchone() #fetch user data
+
         if not user:
             return jsonify({"message":"Invalid user"}), 404
         
         user_id = user[0]
-        has_password = user[6]
+        # has_password = user[6]
         email = user[4]
         
-        if has_password is not None:             
-            return jsonify({'message': 'has password'})
+        # if has_password is not None:             
+        #     return jsonify({'message': 'has password'})
         
         otp = randint(100000, 999999)
         hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')

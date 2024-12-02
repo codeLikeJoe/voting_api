@@ -5,7 +5,7 @@ from datetime import datetime
 
 verify_otp = Blueprint('_verify_otp', __name__)
 
-@verify_otp.route('/verify_otp', methods=['POST'])
+@verify_otp.route('/verify-otp', methods=['POST'])
 def index():
     mysql = current_app.extensions['mysql']
     bcrypt = current_app.extensions['bcrypt']
@@ -13,14 +13,20 @@ def index():
     try:
         email = request.form.get('email')
         received_otp = request.form.get('otp')
+        student_id = request.form.get('student_id')
 
-        if not email or not received_otp:
-            return jsonify({"message": "email and otp required"}), 400
+        if email or student_id:
+            pass
+        else:
+            return jsonify({'message': 'email or student id is required!'}), 400
+
+        if not received_otp:
+            return jsonify({"message": "otp required"}), 400
 
         cursor = mysql.connection.cursor()
 
 
-        cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
+        cursor.execute("SELECT * FROM users WHERE email = %s OR student_id = %s", (email, student_id,))
         user = cursor.fetchone()
         
         if not user:
@@ -42,11 +48,11 @@ def index():
 
         # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE srtauthwqs SET verified = %s, can_set_password = %s WHERE user_id = %s",
-                                    ("Yes", "Yes", user_id))
+            cursor.execute("UPDATE srtauthwqs SET verified = %s WHERE user_id = %s",
+                                    ("Yes", user_id))
             mysql.connection.commit()
 
-            return jsonify({"message": "OTP verified successfully"}), 200
+            return jsonify({"message": "verified successfully"}), 200
         else:
             return jsonify({"message": "Invalid OTP"}), 401
 
