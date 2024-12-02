@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify,current_app
 from datetime import datetime, timedelta
 from random import *
 from flask_mail import Message
-from lib.Authentications.Registration.password_generator import generate_password
+from lib.authentications.password_generator import generate_password
 
 
 register_student = Blueprint('_register_student', __name__)

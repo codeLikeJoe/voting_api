@@ -3,7 +3,7 @@ from random import *
 from datetime import datetime, timedelta
 import re
 import jwt
-from lib.Authentications.token.token_requirement import TokenRequirement
+from lib.authentications.token_requirement import TokenRequirement
 
 # DATE_FORMAT = '%Y-%m-%d'
 

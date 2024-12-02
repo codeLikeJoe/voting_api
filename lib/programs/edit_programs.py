@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify,current_app
 import jwt
 from datetime import datetime
-from lib.Authentications.token.token_requirement import TokenRequirement
+from lib.authentications.token_requirement import TokenRequirement
 
 
 program = Blueprint('_program', __name__)

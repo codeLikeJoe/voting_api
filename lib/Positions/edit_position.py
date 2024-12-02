@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify,current_app
 from datetime import datetime
 import re
 import jwt
-from lib.Authentications.token.token_requirement import TokenRequirement
+from lib.authentications.token_requirement import TokenRequirement
 
 edit_positions = Blueprint('_edit_positions', __name__)
 token_requirement = TokenRequirement(edit_positions)

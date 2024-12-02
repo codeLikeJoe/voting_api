@@ -5,16 +5,16 @@ from lib.manageUsers.getUserByEmails import getUserEmail as getUserEmail_bluepri
 from lib.home import home as home_blueprint
 
 # add student
-from lib.Authentications.Registration.register_student import register_student as register_student_blueprint
-from lib.Authentications.Registration.verify_otp import verify_otp as verify_otp_blueprint
-from lib.Authentications.Registration.send_otp import verify_user as verify_user_blueprint
+from lib.authentications.verify_otp import verify_otp as verify_otp_blueprint
+from lib.authentications.register_student import register_student as register_student_blueprint
+from lib.authentications.send_otp import verify_user as verify_user_blueprint
 
-from lib.Authentications.login import signInUser as signInUser_blueprint
+from lib.authentications.login import signInUser as signInUser_blueprint
 
 # managing passwords
-from lib.Authentications.ManagePassword.forgot_password import forgot_password as forgot_password_blueprint
-from lib.Authentications.ManagePassword.change_password import change_password as change_password_blueprint
-from lib.Authentications.ManagePassword.reset_password import reset_password as reset_password_blueprint
+from lib.authentications.ManagePassword.forgot_password import forgot_password as forgot_password_blueprint
+from lib.authentications.ManagePassword.change_password import change_password as change_password_blueprint
+from lib.authentications.ManagePassword.reset_password import reset_password as reset_password_blueprint
 
 from lib.Candidate.apply_for_position import apply_position as apply_position_blueprint
 

@@ -31,7 +31,7 @@ def login():
         # showing error for non-users
         if not user:
             return jsonify({"Error": "Invalid user"}), 404
-        
+
         user_id = user[0]
         first_name = user[1]
         last_name = user[2]
@@ -42,11 +42,11 @@ def login():
         role_id = user[8]
         year_of_admission = user[9]
         year_of_completion = user[10]
-        
+
         cursor.execute("SELECT * FROM roles WHERE id = %s", (role_id,)) # look through roles
         role = cursor.fetchone() # fetching roles from database
         role_title = role[1]
-        
+
         cursor.execute("SELECT * FROM srtauthwqs WHERE user_id=%s", (user_id,)) # user authentication lookup
         auth = cursor.fetchone()
         verified = auth[4]
@@ -56,7 +56,7 @@ def login():
 
         # if database_password is None: #check if user has set password
         #     return jsonify({"Error":"no password"}), 401
-                        
+
         if bcrypt.check_password_hash(database_password, password): # authenticat password
 
             if new_admin == 'Yes':
@@ -103,6 +103,7 @@ def login():
             return jsonify({'Error':'Invalid credentials'}), 400
         # else:
         #     return jsonify({"Error": "user not verified"}), 401
-        
+
     except Exception as e:
         return jsonify({"Error":f'An error occurred while trying to login. {str(e)}'}), 500
+

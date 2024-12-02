@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify,current_app, session
-from lib.Authentications.token.token_requirement import TokenRequirement
+from lib.authentications.token_requirement import TokenRequirement
 
 apply_position = Blueprint('_apply_position', __name__)
 token_requirement = TokenRequirement(apply_position)

@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify, session, current_app
 from datetime import datetime, timedelta
-from lib.Authentications.token.token_requirement import TokenRequirement
+from lib.authentications.token_requirement import TokenRequirement
 import jwt
 
 change_password = Blueprint('_change_password', __name__)
