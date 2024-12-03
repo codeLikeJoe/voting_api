@@ -7,21 +7,26 @@ verify_otp = Blueprint('_verify_otp', __name__)
 
 @verify_otp.route('/verify-otp', methods=['POST'])
 def index():
-    mysql = current_app.extensions['mysql']
-    bcrypt = current_app.extensions['bcrypt']
-
     try:
-        email = request.form.get('email')
-        received_otp = request.form.get('otp')
-        student_id = request.form.get('student_id')
+        mysql = current_app.extensions['mysql']
+        bcrypt = current_app.extensions['bcrypt']
+
+        raw_data = request.get_json()
+
+        if not raw_data:
+            return jsonify({"Error": "No data provided"}), 400
+
+        email = raw_data.get('email')
+        received_otp = raw_data.get('otp')
+        student_id = raw_data.get('student_id')
 
         if email or student_id:
             pass
         else:
-            return jsonify({'message': 'email or student id is required!'}), 400
+            return jsonify({'message': 'email or student id is required!'}), 403
 
         if not received_otp:
-            return jsonify({"message": "otp required"}), 400
+            return jsonify({"message": "otp required"}), 403
 
         cursor = mysql.connection.cursor()
 
@@ -30,7 +35,7 @@ def index():
         user = cursor.fetchone()
         
         if not user:
-            return jsonify({"message": "user not found"}), 404
+            return jsonify({"message": "invalid user"}), 404
         
         user_id = user[0]
         cursor.execute("SELECT * FROM srtauthwqs WHERE user_id = %s", (user_id,))
@@ -43,7 +48,7 @@ def index():
 
         # Checking if the OTP has expired
         if current_time > float(otp_expiry):
-            return jsonify({"message": "OTP has expired"}), 400
+            return jsonify({"message": "otp has expired"}), 403
         
 
         # Comparing hashes
@@ -54,7 +59,7 @@ def index():
 
             return jsonify({"message": "verified successfully"}), 200
         else:
-            return jsonify({"message": "Invalid OTP"}), 401
+            return jsonify({"message": "invalid otp"}), 403
 
     except Exception as e:
         return jsonify({"error": f"{str(e)}"}), 500

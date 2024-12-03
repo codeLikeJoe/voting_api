@@ -17,9 +17,9 @@ class TokenRequirement:
             try:
                 data = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=["HS256"])
             except jwt.ExpiredSignatureError:
-                return jsonify({'message': 'Token has expired'}), 400
+                return jsonify({'message': 'token has expired'}), 403
             except jwt.InvalidTokenError:
-                return jsonify({'message': 'Invalid token'}), 403
+                return jsonify({'message': 'invalid token'}), 403
             
             return f(*args, **kwargs)
         return decorated

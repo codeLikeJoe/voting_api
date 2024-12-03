@@ -5,21 +5,25 @@ from flask_mail import Message
 
 verify_user = Blueprint('verify_user_account', __name__)
 
-@verify_user.route('/verify', methods=['POST'])
-def verify():
-    # mail = current_app.extensions['mail']
-    mysql = current_app.extensions['mysql']
-    bcrypt = current_app.extensions['bcrypt']
-    
-
+@verify_user.route('/send-otp', methods=['POST'])
+def verify(): 
     try:
-        email = request.form.get('email')
-        student_id = request.form.get('student_id')
+        # mail = current_app.extensions['mail']
+        mysql = current_app.extensions['mysql']
+        bcrypt = current_app.extensions['bcrypt']
+
+        raw_data = request.get_json()
+
+        if not raw_data:
+            return jsonify({"Error": "No data provided"}), 400
+
+        email = raw_data.get('email')
+        student_id = raw_data.get('student_id')
 
         if email or student_id:
             pass
         else:
-            return jsonify({'message': 'email or student id is required!'}), 400   
+            return jsonify({'message': 'email or student id is required!'}), 403   
         
         cursor = mysql.connection.cursor() # establish connection
 
@@ -31,7 +35,7 @@ def verify():
         user = cursor.fetchone() #fetch user data
 
         if not user:
-            return jsonify({"message":"Invalid user"}), 404
+            return jsonify({"message":"invalid user"}), 404
         
         user_id = user[0]
         # has_password = user[6]
@@ -59,7 +63,7 @@ def verify():
                                 (hashed_otp, str(expire_ms), user_id))
         mysql.connection.commit()
 
-        return jsonify({"message": "OTP sent successfully", "otp":otp}), 200
+        return jsonify({"message": "otp sent successfully", "otp":otp}), 200
         
     except Exception as e:
         return jsonify({"message": f"Error {str(e)}"}), 500

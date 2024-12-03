@@ -10,18 +10,23 @@ register_student = Blueprint('_register_student', __name__)
 
 @register_student.route('/register-student', methods=['POST'])
 def index():
-    mysql = current_app.extensions['mysql']
-    bcrypt = current_app.extensions['bcrypt']
-    # mail = current_app.extensions['mail']
-
     try:
-        firstname = request.form.get('firstname').lower()
-        lastname = request.form.get('lastname').lower()
-        email = request.form.get('email')
-        student_id = request.form.get('student_id').lower()
-        program_code = request.form.get('program_code').lower()
-        year_of_admission = request.form.get('year_of_admission')
-        year_of_completion = request.form.get('year_of_completion')
+        mysql = current_app.extensions['mysql']
+        bcrypt = current_app.extensions['bcrypt']
+        # mail = current_app.extensions['mail']
+
+        raw_data = request.get_json()
+
+        if not raw_data:
+            return jsonify({"Error": "No data provided"}), 400
+        
+        firstname = raw_data.get('firstname').lower()
+        lastname = raw_data.get('lastname').lower()
+        email = raw_data.get('email')
+        student_id = raw_data.get('student_id').lower()
+        program_code = raw_data.get('program_code').lower()
+        year_of_admission = raw_data.get('year_of_admission')
+        year_of_completion = raw_data.get('year_of_completion')
 
         cursor = mysql.connection.cursor() # establish connection
 
@@ -30,7 +35,7 @@ def index():
         user = cursor.fetchone()
 
         if user:
-            return jsonify({"message": "student_id or email already exists"}), 400
+            return jsonify({"message": "student id or email already exists"}), 302
         
 
         # fetch available programs

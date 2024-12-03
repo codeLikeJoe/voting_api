@@ -12,9 +12,8 @@ from lib.authentications.send_otp import verify_user as verify_user_blueprint
 from lib.authentications.login import signInUser as signInUser_blueprint
 
 # managing passwords
-from lib.authentications.ManagePassword.forgot_password import forgot_password as forgot_password_blueprint
-from lib.authentications.ManagePassword.change_password import change_password as change_password_blueprint
-from lib.authentications.ManagePassword.reset_password import reset_password as reset_password_blueprint
+from lib.authentications.change_password import change_password as change_password_blueprint
+from lib.authentications.reset_password import reset_password as reset_password_blueprint
 
 from lib.Candidate.apply_for_position import apply_position as apply_position_blueprint
 
@@ -59,7 +58,6 @@ def register_blueprints(app):
     app.register_blueprint(verify_user_blueprint)
 
     # password management
-    app.register_blueprint(forgot_password_blueprint)
     app.register_blueprint(change_password_blueprint)
     app.register_blueprint(reset_password_blueprint)
 

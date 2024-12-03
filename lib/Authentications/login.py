@@ -10,14 +10,19 @@ def login():
         mysql = current_app.extensions['mysql']
         bcrypt = current_app.extensions['bcrypt']
 
+        raw_data = request.get_json()
+        
+        if not raw_data:
+            return jsonify({"Error": "No data provided"}), 400
+
         # retrieving data from input fields
-        student_id = request.form.get('student_id')
-        password = request.form.get('password')
-        email = request.form.get('email')
+        student_id = raw_data.get("student_id")
+        password = raw_data.get("password")
+        email = raw_data.get("email")
 
         # showing error for empty inputs
         if not (password and email) and not (password and student_id):
-            return jsonify({"Error": "Please provide your credentials."}), 400
+            return jsonify({"Error": "Please provide your credentials."}), 403
 
         cursor = mysql.connection.cursor() # register database connection
 
@@ -30,7 +35,7 @@ def login():
 
         # showing error for non-users
         if not user:
-            return jsonify({"Error": "Invalid user"}), 404
+            return jsonify({"Error": f"Invalid user {student_id}"}), 404
 
         user_id = user[0]
         first_name = user[1]
