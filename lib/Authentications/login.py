@@ -81,10 +81,11 @@ def login():
 
             current_time = datetime.now()
             expiry = current_time + timedelta(hours=2)
+            # expiry = current_time + timedelta(minutes = 1)
             expire_ms = expiry.timestamp() * 1000
 
             token = jwt.encode({
-                'user_id': user[0],
+                'user_id': user_id,
                 'expiry': str(expire_ms),
             }, current_app.config['SECRET_KEY'], algorithm="HS256")
 
@@ -98,6 +99,9 @@ def login():
                     'student_id': _student_id if _student_id else 'N/A',
                     'verified': verified if verified else 'No',
                     'token': token,
+                    'current_time': current_time,
+                    'expiry': expiry,
+                    'expiry_ms': expire_ms,
                     'message': 'successful',
                     'role_id': role_id if role_id else 'N/A', 
                     'role_title': role_title if role_title else 'N/A', 
