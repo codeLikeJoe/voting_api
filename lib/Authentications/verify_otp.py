@@ -5,7 +5,7 @@ from datetime import datetime
 
 verify_otp = Blueprint('_verify_otp', __name__)
 
-@verify_otp.route('/verify-otp', methods=['POST'])
+@verify_otp.route('/api/v1/verify-otp', methods=['POST'])
 def index():
     try:
         mysql = current_app.extensions['mysql']

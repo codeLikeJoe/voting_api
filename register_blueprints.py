@@ -1,12 +1,12 @@
-from lib.manageUsers.getAllUsers import getUsers as getUsers_blueprint
-from lib.manageUsers.getUserByIds import getUserId as getUserId_blueprint
+from lib.manageUsers.all_users import getUsers as getUsers_blueprint
+from lib.manageUsers.user_by_id import getUserId as getUserId_blueprint
 from lib.manageUsers.getUserByEmails import getUserEmail as getUserEmail_blueprint
 
 from lib.home import home as home_blueprint
 
 # add student
 from lib.authentications.verify_otp import verify_otp as verify_otp_blueprint
-from lib.authentications.register_student import register_student as register_student_blueprint
+from lib.authentications.add_student import register_student as register_student_blueprint
 from lib.authentications.send_otp import verify_user as verify_user_blueprint
 
 from lib.authentications.login import signInUser as signInUser_blueprint

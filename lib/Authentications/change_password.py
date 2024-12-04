@@ -6,7 +6,7 @@ import jwt
 change_password = Blueprint('_change_password', __name__)
 token_requirement = TokenRequirement(change_password)
 
-@change_password.route('/change-password', methods=['POST'])
+@change_password.route('/api/v1/change-password', methods=['POST'])
 @token_requirement.token_required
 def index():    
     try:

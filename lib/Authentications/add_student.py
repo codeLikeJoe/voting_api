@@ -8,7 +8,7 @@ from lib.authentications.password_generator import generate_password
 register_student = Blueprint('_register_student', __name__)
 
 
-@register_student.route('/register-student', methods=['POST'])
+@register_student.route('/api/v1/add-student', methods=['POST'])
 def index():
     try:
         mysql = current_app.extensions['mysql']
@@ -36,7 +36,6 @@ def index():
 
         if user:
             return jsonify({"message": "student id or email already exists"}), 302
-        
 
         # fetch available programs
         cursor.execute("SELECT * FROM program WHERE program_code = %s", (program_code,))
@@ -54,7 +53,6 @@ def index():
         # Hash the password
         hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
         
-        
         # otp = randint(100000, 999999)
         # hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
 
@@ -63,8 +61,6 @@ def index():
         # mail.send(msg)
 
         current_time = datetime.now()
-        # expiry = current_time + timedelta(hours=24)
-        # expire_ms = expiry.timestamp() * 1000
 
         cursor.execute("SELECT * FROM roles WHERE title = %s", ('student',))
         role = cursor.fetchone()
@@ -83,8 +79,8 @@ def index():
         user_id = new_user[0] # get user id from database
 
         # create auth row with user_id
-        cursor.execute("INSERT INTO srtauthwqs (user_id) VALUES (%s)",
-                    (user_id,),)
+        cursor.execute("INSERT INTO srtauthwqs (user_id, set_password) VALUES (%s, %s)",
+                    (user_id, 'Yes',),)
         mysql.connection.commit()
         
         return jsonify({
@@ -98,11 +94,10 @@ def index():
             'program_code': p_code,
             'password': password,
             'message': 'successful',
-            'year_of_admission': new_user[9],
-            'year_of_completion': new_user[10]
+            'admission_date': new_user[9],
+            'completion_date': new_user[10]
         }), 201
     
     except Exception as e:
         return jsonify({"Error": f"An error occurred during registration. {str(e)}"}), 500
     
-

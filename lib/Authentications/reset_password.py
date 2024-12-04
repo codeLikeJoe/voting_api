@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify,current_app, session
 
 reset_password = Blueprint('_reset_password', __name__)
 
-@reset_password.route('/reset-password', methods=['POST'])
+@reset_password.route('/api/v1/reset-password', methods=['POST'])
 def index():
     try:
         mysql = current_app.extensions['mysql']
@@ -39,6 +39,10 @@ def index():
 
         cursor.execute("UPDATE users SET password = %s WHERE email = %s OR student_id = %s",
                             (hashed_password, email, student_id))
+        mysql.connection.commit()
+
+        cursor.execute('UPDATE srtauthwqs SET set_password = %s WHERE user_id = %s', 
+                        (None, user[0]))
         mysql.connection.commit()
 
         return jsonify({"message": f"password updated successfully."}), 200
