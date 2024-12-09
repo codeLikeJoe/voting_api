@@ -38,11 +38,11 @@ def index():
             return jsonify({"message": "invalid user"}), 404
         
         user_id = user[0]
-        cursor.execute("SELECT * FROM srtauthwqs WHERE user_id = %s", (user_id,))
+        cursor.execute("SELECT * FROM authcheck WHERE user_id = %s", (user_id,))
         srtauthwq = cursor.fetchone()
 
-        hashed_otp_from_db = srtauthwq[2]
-        otp_expiry = srtauthwq[3]
+        hashed_otp_from_db = srtauthwq[4]
+        otp_expiry = srtauthwq[2]
 
         current_time = datetime.now().timestamp() * 1000
 
@@ -53,8 +53,8 @@ def index():
 
         # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE srtauthwqs SET verified = %s WHERE user_id = %s",
-                                    ("Yes", user_id))
+            cursor.execute("UPDATE authcheck SET verified = %s WHERE user_id = %s",
+                                    (True, user_id))
             mysql.connection.commit()
 
             return jsonify({"message": "verified successfully"}), 200

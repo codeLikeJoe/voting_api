@@ -45,7 +45,7 @@ def index():
         cursor.execute('SELECT * FROM users WHERE id = %s', (user_id,))
         user = cursor.fetchone()
 
-        database_password = user[6] # retrieving old password
+        database_password = user[7] # retrieving old password
 
         # checking if old password matches
         if not bcrypt.check_password_hash(database_password, old_password):

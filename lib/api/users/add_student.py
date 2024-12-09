@@ -25,8 +25,8 @@ def index():
         email = raw_data.get('email')
         student_id = raw_data.get('student_id').lower()
         program_code = raw_data.get('program_code').lower()
-        year_of_admission = raw_data.get('year_of_admission')
-        year_of_completion = raw_data.get('year_of_completion')
+        year_of_admission = raw_data.get('admission_date')
+        year_of_completion = raw_data.get('completion_date')
 
         cursor = mysql.connection.cursor() # establish connection
 
@@ -38,14 +38,15 @@ def index():
             return jsonify({"message": "student id or email already exists"}), 302
 
         # fetch available programs
-        cursor.execute("SELECT * FROM program WHERE program_code = %s", (program_code,))
+        cursor.execute("SELECT * FROM programs WHERE program_code = %s", (program_code,))
         _program = cursor.fetchone()
-        program_id = _program[0]
-        p_title = _program[1]
-        p_code = _program[2]
 
         if _program is None:
             return jsonify({"message": "The program does not exist"}), 404
+        
+        program_id = _program[0]
+        p_title = _program[1]
+        p_code = _program[2]
         
         # Generate random password
         password = generate_password()
@@ -65,9 +66,10 @@ def index():
         cursor.execute("SELECT * FROM roles WHERE title = %s", ('student',))
         role = cursor.fetchone()
         role_id = role[0]
+        role_title = role[1]
 
         cursor.execute("""INSERT INTO users (first_name, last_name, student_id, email, program_id, 
-                       password, date_created, role_id, year_of_admission, year_of_completion) 
+                       password, created_at, role_id, admission_date, completion_date) 
                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (firstname, lastname, student_id, email, program_id, hashed_password, current_time, 
                      role_id, year_of_admission, year_of_completion))
@@ -79,23 +81,27 @@ def index():
         user_id = new_user[0] # get user id from database
 
         # create auth row with user_id
-        cursor.execute("INSERT INTO srtauthwqs (user_id, set_password) VALUES (%s, %s)",
-                    (user_id, 'Yes',),)
+        cursor.execute("INSERT INTO authcheck (user_id, set_password) VALUES (%s, %s)",
+                    (user_id, True,),)
         mysql.connection.commit()
         
         return jsonify({
             'user_id': user_id,
             'first_name': new_user[1],
             'last_name': new_user[2],
-            'student_id': new_user[3],
-            'email': new_user[4],
+            'email': new_user[3],
+            'student_id': new_user[4],
             'program_id': program_id,
             'program_title': p_title,
             'program_code': p_code,
+            'role_id': role_id,
+            'role_title': role_title,
             'password': password,
             'message': 'successful',
+            'verified': new_user[8],
             'admission_date': new_user[9],
-            'completion_date': new_user[10]
+            'completion_date': new_user[10],
+            'created_at': new_user[11]
         }), 201
     
     except Exception as e:

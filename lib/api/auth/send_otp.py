@@ -39,7 +39,7 @@ def verify():
         
         user_id = user[0]
         # has_password = user[6]
-        email = user[4]
+        email = user[3]
         
         otp = randint(100000, 999999)
         hashed_otp = bcrypt.generate_password_hash(str(otp)).decode('utf-8')
@@ -52,7 +52,7 @@ def verify():
         expiry = current_time + timedelta(minutes=60)
         expire_ms = expiry.timestamp() * 1000
         
-        cursor.execute("UPDATE srtauthwqs SET otp = %s, expiry = %s WHERE user_id = %s",
+        cursor.execute("UPDATE authcheck SET otp = %s, token_expiry = %s WHERE user_id = %s",
                                 (hashed_otp, str(expire_ms), user_id))
         mysql.connection.commit()
 

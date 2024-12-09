@@ -13,7 +13,7 @@ def login():
         raw_data = request.get_json()
         
         if not raw_data:
-            return jsonify({"Error": "No data provided"}), 400
+            return jsonify({"error": "No data provided"}), 400
 
         # retrieving data from input fields
         student_id = raw_data.get("student_id")
@@ -22,7 +22,7 @@ def login():
 
         # showing error for empty inputs
         if not (password and email) and not (password and student_id):
-            return jsonify({"Error": "Please provide your credentials."}), 403
+            return jsonify({"error": "please provide your credentials."}), 403
 
         cursor = mysql.connection.cursor() # register database connection
 
@@ -35,29 +35,28 @@ def login():
 
         # showing error for non-users
         if not user:
-            return jsonify({"Error": f"Invalid user {student_id}"}), 404
+            return jsonify({"error": f"Invalid user"}), 404
 
         user_id = user[0]
         first_name = user[1]
         last_name = user[2]
-        _student_id = user[3]
-        _email = user[4]
+        _email = user[3]
+        _student_id = user[4]
         program_id = user[5]
-        p_title = user[6]
+        role_id = user[6]
         database_password = user[7]
-        created_at = user[8]
-        role_id = user[9]
-        year_of_admission = user[10]
-        year_of_completion = user[11]
+        verified = user[8]
+        year_of_admission = user[9]
+        year_of_completion = user[10]
+        created_at = user[11]
 
         cursor.execute("SELECT * FROM roles WHERE id = %s", (role_id,)) # look through roles
         role = cursor.fetchone() # fetching roles from database
         role_title = role[1]
 
-        cursor.execute("SELECT * FROM srtauthwqs WHERE user_id=%s", (user_id,)) # user authentication lookup
+        cursor.execute("SELECT * FROM authcheck WHERE user_id=%s", (user_id,)) # user authentication lookup
         auth = cursor.fetchone()
-        verified = auth[4]
-        set_password = auth[5]
+        set_password = auth[3]
 
         if bcrypt.check_password_hash(database_password, password): # authenticat password
             current_time = datetime.now()
@@ -75,7 +74,6 @@ def login():
                     'first_name': first_name,
                     'last_name': last_name,
                     'program_id': program_id,
-                    'program_title':p_title,
                     'email': _email,
                     'student_id': _student_id,
                     'verified': verified,
@@ -88,8 +86,8 @@ def login():
                     'message': 'successful',
                     'role_id': role_id, 
                     'role_title': role_title, 
-                    'year_of_admission': year_of_admission,
-                    'year_of_completion': year_of_completion,
+                    'admission_date': year_of_admission,
+                    'completion_date': year_of_completion,
                     }), 200
         else:
             return jsonify({'Error':'Invalid credentials'}), 400

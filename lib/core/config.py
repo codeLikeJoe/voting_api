@@ -14,6 +14,6 @@ def database_config():
         'MYSQL_HOST': "localhost",
         'MYSQL_USER': "root",
         'MYSQL_PASSWORD': "",
-        'MYSQL_DB': "smartvote",
+        'MYSQL_DB': "evoting",
         'SECRET_KEY': "secretKey007"
     }

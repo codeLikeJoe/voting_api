@@ -41,8 +41,8 @@ def index():
                             (hashed_password, email, student_id))
         mysql.connection.commit()
 
-        cursor.execute('UPDATE srtauthwqs SET set_password = %s WHERE user_id = %s', 
-                        (None, user[0]))
+        cursor.execute('UPDATE authcheck SET set_password = %s WHERE user_id = %s', 
+                        (False, user[0]))
         mysql.connection.commit()
 
         return jsonify({"message": f"password updated successfully."}), 200
