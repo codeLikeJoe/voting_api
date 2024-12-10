@@ -53,7 +53,7 @@ def index():
 
         # Comparing hashes
         if bcrypt.check_password_hash(hashed_otp_from_db, received_otp):
-            cursor.execute("UPDATE authcheck SET verified = %s WHERE user_id = %s",
+            cursor.execute("UPDATE users SET verified = %s WHERE id = %s",
                                     (True, user_id))
             mysql.connection.commit()
 
